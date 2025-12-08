@@ -1,0 +1,110 @@
+{
+  "pack_id": "core.safe-code.v1",
+  "name": "Safe Code",
+  "description": "Validates that generated code follows safety best practices",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "policy_id": "no-dangerous-patterns",
+      "name": "No Dangerous Code Patterns",
+      "description": "Code must not contain dangerous patterns like eval, exec, or shell injection vectors",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "no-eval",
+          "description": "Code must not use eval() or similar dynamic execution",
+          "expression": {
+            "forall": {
+              "var": "cb",
+              "in": "code_blocks",
+              "condition": {
+                "not": {
+                  "predicate": "contains_eval",
+                  "args": ["cb"]
+                }
+              }
+            }
+          },
+          "severity": "error"
+        },
+        {
+          "rule_id": "no-shell-injection",
+          "description": "Code must not be vulnerable to shell injection",
+          "expression": {
+            "forall": {
+              "var": "cb",
+              "in": "code_blocks",
+              "condition": {
+                "not": {
+                  "predicate": "vulnerable_to_injection",
+                  "args": ["cb"]
+                }
+              }
+            }
+          },
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "policy_id": "no-secrets",
+      "name": "No Hardcoded Secrets",
+      "description": "Code must not contain hardcoded credentials or secrets",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "no-hardcoded-credentials",
+          "description": "Code must not contain hardcoded passwords, API keys, or tokens",
+          "expression": {
+            "forall": {
+              "var": "cb",
+              "in": "code_blocks",
+              "condition": {
+                "not": {
+                  "predicate": "contains_secrets",
+                  "args": ["cb"]
+                }
+              }
+            }
+          },
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "policy_id": "safe-imports",
+      "name": "Safe Library Usage",
+      "description": "Code should use safe library patterns",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "no-deprecated-unsafe",
+          "description": "Code should not use deprecated or known-unsafe libraries",
+          "expression": {
+            "forall": {
+              "var": "cb",
+              "in": "code_blocks",
+              "condition": {
+                "predicate": "uses_safe_libraries",
+                "args": ["cb"]
+              }
+            }
+          },
+          "severity": "warning"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "author": "Superficial Labs",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/superficiallabs/cape",
+    "tags": ["code-safety", "security", "core"],
+    "created": "2025-12-01",
+    "updated": "2025-12-01"
+  }
+}
+
+
+
+

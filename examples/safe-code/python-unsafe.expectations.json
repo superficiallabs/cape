@@ -1,0 +1,23 @@
+{
+  "description": "Python code using eval() on unsanitized user input - a major security vulnerability",
+  "packs": ["core.safe-code.v1"],
+  "expected_violations": [
+    {
+      "policy_id": "no-dangerous-patterns",
+      "rule_id": "no-eval",
+      "node_id": "cb1",
+      "message": "Code uses eval() which can execute arbitrary code"
+    },
+    {
+      "policy_id": "no-dangerous-patterns",
+      "rule_id": "no-shell-injection",
+      "node_id": "cb1",
+      "message": "Code accepts unsanitized user input for code execution"
+    }
+  ],
+  "notes": "This example demonstrates dangerous code patterns. Using eval() on user input is a serious security vulnerability that can lead to arbitrary code execution. The code should use safer alternatives like ast.literal_eval() for parsing literals, or avoid dynamic code execution entirely."
+}
+
+
+
+

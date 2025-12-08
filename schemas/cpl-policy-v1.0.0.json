@@ -1,0 +1,236 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://superficiallabs.com/schemas/cpl-policy-v1.0.0.json",
+  "title": "CPL Policy",
+  "description": "A Capability Policy Language policy for evaluating PredicateGraphs",
+  "type": "object",
+  "required": ["policy_id", "name", "description", "version", "rules"],
+  "properties": {
+    "policy_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique policy identifier"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Policy description"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Policy version (semver)"
+    },
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/rule" },
+      "minItems": 1,
+      "description": "Policy rules"
+    },
+    "custom_predicates": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/custom_predicate" },
+      "description": "Custom predicate definitions"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata"
+    }
+  },
+  "definitions": {
+    "rule": {
+      "type": "object",
+      "required": ["rule_id", "description", "expression"],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique rule identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description"
+        },
+        "expression": {
+          "$ref": "#/definitions/expression",
+          "description": "Logical expression"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning", "info"],
+          "default": "error",
+          "description": "Violation severity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "expression": {
+      "oneOf": [
+        { "$ref": "#/definitions/forall_expr" },
+        { "$ref": "#/definitions/exists_expr" },
+        { "$ref": "#/definitions/and_expr" },
+        { "$ref": "#/definitions/or_expr" },
+        { "$ref": "#/definitions/not_expr" },
+        { "$ref": "#/definitions/implies_expr" },
+        { "$ref": "#/definitions/predicate_expr" },
+        { "$ref": "#/definitions/compare_expr" },
+        { "$ref": "#/definitions/verifier_expr" }
+      ]
+    },
+    "forall_expr": {
+      "type": "object",
+      "required": ["forall"],
+      "properties": {
+        "forall": {
+          "type": "object",
+          "required": ["var", "in", "condition"],
+          "properties": {
+            "var": { "type": "string" },
+            "in": { "type": "string" },
+            "condition": { "$ref": "#/definitions/expression" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "exists_expr": {
+      "type": "object",
+      "required": ["exists"],
+      "properties": {
+        "exists": {
+          "type": "object",
+          "required": ["var", "in", "condition"],
+          "properties": {
+            "var": { "type": "string" },
+            "in": { "type": "string" },
+            "condition": { "$ref": "#/definitions/expression" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "and_expr": {
+      "type": "object",
+      "required": ["and"],
+      "properties": {
+        "and": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/expression" },
+          "minItems": 2
+        }
+      },
+      "additionalProperties": false
+    },
+    "or_expr": {
+      "type": "object",
+      "required": ["or"],
+      "properties": {
+        "or": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/expression" },
+          "minItems": 2
+        }
+      },
+      "additionalProperties": false
+    },
+    "not_expr": {
+      "type": "object",
+      "required": ["not"],
+      "properties": {
+        "not": { "$ref": "#/definitions/expression" }
+      },
+      "additionalProperties": false
+    },
+    "implies_expr": {
+      "type": "object",
+      "required": ["implies"],
+      "properties": {
+        "implies": {
+          "type": "object",
+          "required": ["if", "then"],
+          "properties": {
+            "if": { "$ref": "#/definitions/expression" },
+            "then": { "$ref": "#/definitions/expression" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "predicate_expr": {
+      "type": "object",
+      "required": ["predicate", "args"],
+      "properties": {
+        "predicate": { "type": "string" },
+        "args": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "compare_expr": {
+      "type": "object",
+      "required": ["compare"],
+      "properties": {
+        "compare": {
+          "type": "object",
+          "required": ["left", "op", "right"],
+          "properties": {
+            "left": {},
+            "op": {
+              "type": "string",
+              "enum": ["==", "!=", "<", "<=", ">", ">="]
+            },
+            "right": {}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "verifier_expr": {
+      "type": "object",
+      "required": ["verifier"],
+      "properties": {
+        "verifier": {
+          "type": "object",
+          "required": ["id", "threshold"],
+          "properties": {
+            "id": { "type": "string" },
+            "threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "custom_predicate": {
+      "type": "object",
+      "required": ["params", "expression"],
+      "properties": {
+        "params": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "expression": { "$ref": "#/definitions/expression" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
+
+
+
+

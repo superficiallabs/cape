@@ -1,0 +1,65 @@
+{
+  "verifier_id": "verifier.reasoning.argument_soundness",
+  "name": "Argument Soundness Verifier",
+  "description": "Evaluates whether arguments in reasoning are logically sound - checking that premises are true and conclusions follow validly from them",
+  "version": "1.0.0",
+  "input_schema": {
+    "type": "object",
+    "required": ["claims", "discourse_acts"],
+    "properties": {
+      "claims": {
+        "type": "array",
+        "description": "Claims that form the premises and conclusions of arguments"
+      },
+      "discourse_acts": {
+        "type": "array",
+        "description": "Must include REASONING discourse acts to identify argument structure"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["evaluation", "issues", "score", "reasoning"],
+    "properties": {
+      "evaluation": {
+        "type": "object",
+        "properties": {
+          "premises_identified": { "type": "boolean" },
+          "premises_true": { "type": "boolean" },
+          "logic_valid": { "type": "boolean" },
+          "conclusion_supported": { "type": "boolean" }
+        }
+      },
+      "issues": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["location", "description", "severity"],
+          "properties": {
+            "location": { "type": "string" },
+            "description": { "type": "string" },
+            "severity": { "type": "string", "enum": ["fatal", "major", "minor"] },
+            "issue_type": {
+              "type": "string",
+              "enum": ["false_premise", "invalid_inference", "unsupported_conclusion", "fallacy", "other"]
+            }
+          }
+        }
+      },
+      "score": { "type": "number", "minimum": 0, "maximum": 1 },
+      "reasoning": { "type": "string" }
+    }
+  },
+  "training_objective": "Evaluate argument soundness by checking that all premises are factually true, logical inferences are valid, and conclusions are properly supported; identify specific fallacies and unsupported claims",
+  "meta_verification": true,
+  "metadata": {
+    "author": "Superficial Labs",
+    "created": "2025-12-01",
+    "category": "reasoning",
+    "tags": ["logic", "arguments", "soundness", "validity"]
+  }
+}
+
+
+
+

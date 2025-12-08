@@ -1,0 +1,77 @@
+{
+  "verifier_id": "verifier.mathematics.proof_validity",
+  "name": "Proof Validity Verifier",
+  "description": "Evaluates whether mathematical proofs are valid, checking that each step follows from previous steps and axioms",
+  "version": "1.0.0",
+  "input_schema": {
+    "type": "object",
+    "required": ["claims", "operations"],
+    "properties": {
+      "claims": {
+        "type": "array",
+        "description": "Mathematical statements forming the proof steps"
+      },
+      "operations": {
+        "type": "array",
+        "description": "Mathematical operations and transformations in the proof"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["evaluation", "issues", "score", "reasoning"],
+    "properties": {
+      "evaluation": {
+        "type": "object",
+        "properties": {
+          "proof_structure_valid": { "type": "boolean" },
+          "all_steps_justified": { "type": "boolean" },
+          "operations_correct": { "type": "boolean" },
+          "conclusion_reached": { "type": "boolean" }
+        }
+      },
+      "step_evaluations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "step": { "type": "integer" },
+            "statement": { "type": "string" },
+            "justification_valid": { "type": "boolean" },
+            "issue": { "type": "string" }
+          }
+        }
+      },
+      "issues": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["location", "description", "severity"],
+          "properties": {
+            "location": { "type": "string" },
+            "description": { "type": "string" },
+            "severity": { "type": "string", "enum": ["fatal", "major", "minor"] },
+            "issue_type": {
+              "type": "string",
+              "enum": ["unjustified_step", "calculation_error", "missing_case", "circular_reasoning", "undefined_term", "other"]
+            }
+          }
+        }
+      },
+      "score": { "type": "number", "minimum": 0, "maximum": 1 },
+      "reasoning": { "type": "string" }
+    }
+  },
+  "training_objective": "Evaluate mathematical proof validity by checking each step follows from previous steps or axioms, calculations are correct, all cases are covered, and the conclusion is properly reached",
+  "meta_verification": true,
+  "metadata": {
+    "author": "Superficial Labs",
+    "created": "2025-12-01",
+    "category": "mathematics",
+    "tags": ["proofs", "mathematics", "logic", "validity"]
+  }
+}
+
+
+
+

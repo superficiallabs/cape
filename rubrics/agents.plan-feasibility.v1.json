@@ -1,0 +1,95 @@
+{
+  "verifier_id": "verifier.agents.plan_feasibility",
+  "name": "Plan Feasibility Verifier",
+  "description": "Evaluates whether an agent's proposed plan is feasible given preconditions, available actions, and goals",
+  "version": "1.0.0",
+  "input_schema": {
+    "type": "object",
+    "required": ["claims", "tool_calls"],
+    "properties": {
+      "claims": {
+        "type": "array",
+        "description": "Claims about world state, preconditions, and goals"
+      },
+      "tool_calls": {
+        "type": "array",
+        "description": "Planned actions/tool calls in the plan"
+      },
+      "context": {
+        "type": "object",
+        "properties": {
+          "initial_state": { "type": "object" },
+          "goal_state": { "type": "object" },
+          "available_actions": { "type": "array" }
+        }
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["evaluation", "issues", "score", "reasoning"],
+    "properties": {
+      "evaluation": {
+        "type": "object",
+        "properties": {
+          "preconditions_satisfiable": { "type": "boolean" },
+          "actions_available": { "type": "boolean" },
+          "state_transitions_valid": { "type": "boolean" },
+          "goal_achievable": { "type": "boolean" }
+        }
+      },
+      "step_evaluations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "step": { "type": "integer" },
+            "action": { "type": "string", "description": "What this step does" },
+            "feasibility": { "type": "string", "enum": ["feasible", "uncertain", "infeasible"] },
+            "preconditions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "condition": { "type": "string" },
+                  "satisfied": { "type": "boolean" }
+                }
+              }
+            },
+            "issue": { "type": "string" }
+          }
+        }
+      },
+      "issues": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["location", "description", "severity"],
+          "properties": {
+            "location": { "type": "string" },
+            "description": { "type": "string" },
+            "severity": { "type": "string", "enum": ["fatal", "major", "minor"] },
+            "issue_type": {
+              "type": "string",
+              "enum": ["precondition_violated", "action_infeasible", "state_inconsistent", "goal_unreachable", "missing_step", "other"]
+            }
+          }
+        }
+      },
+      "score": { "type": "number", "minimum": 0, "maximum": 1 },
+      "reasoning": { "type": "string" }
+    }
+  },
+  "training_objective": "Evaluate plan feasibility by checking preconditions and state transitions; identify specific failure points where actions cannot be executed or goals cannot be reached",
+  "meta_verification": true,
+  "metadata": {
+    "author": "Superficial Labs",
+    "created": "2025-12-01",
+    "category": "agents",
+    "tags": ["planning", "agents", "feasibility", "actions"]
+  }
+}
+
+
+
+

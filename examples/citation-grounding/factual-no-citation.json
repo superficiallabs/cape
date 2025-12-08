@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0.0",
+  "output_id": "citation-001",
+  "text": "Python was created by Guido van Rossum and first released in 1991. It has become one of the most popular programming languages in the world, consistently ranking in the top 3 on the TIOBE index.",
+  "entities": [
+    {
+      "id": "e1",
+      "text": "Python",
+      "type": "PROGRAMMING_LANGUAGE",
+      "span": { "start": 0, "end": 6 }
+    },
+    {
+      "id": "e2",
+      "text": "Guido van Rossum",
+      "type": "PERSON",
+      "span": { "start": 22, "end": 38 }
+    },
+    {
+      "id": "e3",
+      "text": "1991",
+      "type": "DATE",
+      "span": { "start": 62, "end": 66 }
+    },
+    {
+      "id": "e4",
+      "text": "TIOBE index",
+      "type": "REFERENCE",
+      "span": { "start": 182, "end": 193 }
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "text": "Python was created by Guido van Rossum",
+      "modality": "factual",
+      "domain": "programming",
+      "span": { "start": 0, "end": 38 },
+      "entity_refs": ["e1", "e2"]
+    },
+    {
+      "id": "c2",
+      "text": "Python was first released in 1991",
+      "modality": "factual",
+      "domain": "programming",
+      "span": { "start": 43, "end": 66 },
+      "entity_refs": ["e1", "e3"]
+    },
+    {
+      "id": "c3",
+      "text": "Python has become one of the most popular programming languages in the world",
+      "modality": "factual",
+      "domain": "programming",
+      "span": { "start": 68, "end": 144 },
+      "entity_refs": ["e1"]
+    },
+    {
+      "id": "c4",
+      "text": "Python consistently ranks in the top 3 on the TIOBE index",
+      "modality": "factual",
+      "domain": "programming",
+      "span": { "start": 146, "end": 194 },
+      "entity_refs": ["e1", "e4"]
+    }
+  ],
+  "operations": [],
+  "tool_calls": [],
+  "citations": [],
+  "code_blocks": [],
+  "discourse_acts": [
+    {
+      "id": "da1",
+      "type": "ASSERTION",
+      "span": { "start": 0, "end": 66 },
+      "claim_refs": ["c1", "c2"],
+      "children": []
+    },
+    {
+      "id": "da2",
+      "type": "ASSERTION",
+      "span": { "start": 68, "end": 194 },
+      "claim_refs": ["c3", "c4"],
+      "children": []
+    }
+  ],
+  "context": {
+    "user_query": "Tell me about Python"
+  }
+}
+
+
+
+

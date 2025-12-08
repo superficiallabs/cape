@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://superficiallabs.com/schemas/verifier-rubric-v1.0.0.json",
+  "title": "Verifier Rubric",
+  "description": "A specification for how a learned verifier should evaluate outputs",
+  "type": "object",
+  "required": [
+    "verifier_id",
+    "name",
+    "description",
+    "version",
+    "input_schema",
+    "output_schema",
+    "training_objective"
+  ],
+  "properties": {
+    "verifier_id": {
+      "type": "string",
+      "pattern": "^verifier\\.[a-z]+\\.[a-z_]+$",
+      "description": "Unique verifier identifier (format: verifier.category.name)"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this verifier evaluates"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Rubric version (semver)"
+    },
+    "input_schema": {
+      "type": "object",
+      "description": "Expected PredicateGraph structure"
+    },
+    "output_schema": {
+      "type": "object",
+      "description": "Evaluation output structure",
+      "required": ["type", "required", "properties"],
+      "properties": {
+        "type": { "const": "object" },
+        "required": {
+          "type": "array",
+          "items": { "type": "string" },
+          "contains": { "enum": ["evaluation", "issues", "score", "reasoning"] }
+        },
+        "properties": {
+          "type": "object",
+          "required": ["evaluation", "issues", "score", "reasoning"],
+          "properties": {
+            "evaluation": { "type": "object" },
+            "issues": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "array" }
+              }
+            },
+            "score": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "number" },
+                "minimum": { "const": 0 },
+                "maximum": { "const": 1 }
+              }
+            },
+            "reasoning": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "training_objective": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Description of what the verifier should learn to evaluate"
+    },
+    "meta_verification": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to verify the verifier's output"
+    },
+    "metadata": {
+      "$ref": "#/definitions/metadata",
+      "description": "Additional metadata"
+    }
+  },
+  "definitions": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "author": { "type": "string" },
+        "created": { "type": "string", "format": "date" },
+        "category": {
+          "type": "string",
+          "enum": ["reasoning", "mathematics", "agents", "coding", "other"]
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
+
+
+
+

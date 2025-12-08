@@ -1,0 +1,96 @@
+{
+  "pack_id": "core.tool-use.v1",
+  "name": "Tool Use",
+  "description": "Validates tool/function call correctness including argument types, required arguments, and value constraints",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "policy_id": "tool-args-valid",
+      "name": "Tool Arguments Valid",
+      "description": "Tool call arguments match expected types and constraints",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "args-match-schema",
+          "description": "All tool call arguments must match their expected schema",
+          "expression": {
+            "forall": {
+              "var": "tc",
+              "in": "tool_calls",
+              "condition": {
+                "predicate": "arguments_match_schema",
+                "args": ["tc"]
+              }
+            }
+          },
+          "severity": "error"
+        },
+        {
+          "rule_id": "required-args-present",
+          "description": "All required arguments must be provided",
+          "expression": {
+            "forall": {
+              "var": "tc",
+              "in": "tool_calls",
+              "condition": {
+                "predicate": "has_required_arguments",
+                "args": ["tc"]
+              }
+            }
+          },
+          "severity": "error"
+        },
+        {
+          "rule_id": "no-extra-args",
+          "description": "No unexpected arguments should be present",
+          "expression": {
+            "forall": {
+              "var": "tc",
+              "in": "tool_calls",
+              "condition": {
+                "predicate": "no_extra_arguments",
+                "args": ["tc"]
+              }
+            }
+          },
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "policy_id": "tool-name-valid",
+      "name": "Tool Name Valid",
+      "description": "Tool calls reference valid, available tools",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "tool-exists",
+          "description": "Tool must be in the available tools list",
+          "expression": {
+            "forall": {
+              "var": "tc",
+              "in": "tool_calls",
+              "condition": {
+                "predicate": "tool_is_available",
+                "args": ["tc"]
+              }
+            }
+          },
+          "severity": "error"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "author": "Superficial Labs",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/superficiallabs/cape",
+    "tags": ["tool-use", "function-calling", "core"],
+    "created": "2025-12-01",
+    "updated": "2025-12-01"
+  }
+}
+
+
+
+

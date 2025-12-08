@@ -1,0 +1,112 @@
+{
+  "pack_id": "example.customer-support.v1",
+  "name": "Customer Support Quality",
+  "description": "Example policies for customer support interaction quality",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "policy_id": "greeting-required",
+      "name": "Greeting Required",
+      "description": "Customer support responses should include a greeting",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "has-greeting",
+          "description": "Response must include a GREETING discourse act",
+          "expression": {
+            "exists": {
+              "var": "da",
+              "in": "discourse_acts",
+              "condition": {
+                "predicate": "has_discourse_type",
+                "args": ["da", "GREETING"]
+              }
+            }
+          },
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "policy_id": "acknowledgment-required",
+      "name": "Acknowledgment Required",
+      "description": "Customer support responses should acknowledge the customer's issue",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "has-acknowledgment",
+          "description": "Response must include an ACKNOWLEDGMENT discourse act",
+          "expression": {
+            "exists": {
+              "var": "da",
+              "in": "discourse_acts",
+              "condition": {
+                "predicate": "has_discourse_type",
+                "args": ["da", "ACKNOWLEDGMENT"]
+              }
+            }
+          },
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "policy_id": "professional-tone",
+      "name": "Professional Tone",
+      "description": "Responses should maintain a professional tone",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "no-informal-language",
+          "description": "Response should not contain overly informal language",
+          "expression": {
+            "forall": {
+              "var": "c",
+              "in": "claims",
+              "condition": {
+                "predicate": "is_professional_tone",
+                "args": ["c"]
+              }
+            }
+          },
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "policy_id": "closing-required",
+      "name": "Closing Required",
+      "description": "Customer support responses should include a proper closing",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "has-closing",
+          "description": "Response must include a CLOSING discourse act",
+          "expression": {
+            "exists": {
+              "var": "da",
+              "in": "discourse_acts",
+              "condition": {
+                "predicate": "has_discourse_type",
+                "args": ["da", "CLOSING"]
+              }
+            }
+          },
+          "severity": "warning"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "author": "Superficial Labs",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/superficiallabs/cape",
+    "tags": ["customer-support", "tone", "example"],
+    "created": "2025-12-01",
+    "updated": "2025-12-01"
+  }
+}
+
+
+
+

@@ -1,0 +1,35 @@
+{
+  "description": "Multiple factual claims about Python without any supporting citations",
+  "packs": ["core.citation-grounding.v1"],
+  "expected_violations": [
+    {
+      "policy_id": "factual-claims-cited",
+      "rule_id": "factual-has-citation",
+      "node_id": "c1",
+      "message": "Factual claim 'Python was created by Guido van Rossum' has no citation"
+    },
+    {
+      "policy_id": "factual-claims-cited",
+      "rule_id": "factual-has-citation",
+      "node_id": "c2",
+      "message": "Factual claim 'Python was first released in 1991' has no citation"
+    },
+    {
+      "policy_id": "factual-claims-cited",
+      "rule_id": "factual-has-citation",
+      "node_id": "c3",
+      "message": "Factual claim about Python's popularity has no citation"
+    },
+    {
+      "policy_id": "factual-claims-cited",
+      "rule_id": "factual-has-citation",
+      "node_id": "c4",
+      "message": "Factual claim about TIOBE ranking has no citation"
+    }
+  ],
+  "notes": "This example demonstrates the citation-grounding policy detecting multiple factual claims that lack supporting citations. Each factual claim should be backed by a verifiable source."
+}
+
+
+
+

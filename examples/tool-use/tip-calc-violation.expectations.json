@@ -1,0 +1,17 @@
+{
+  "description": "Tool call with incorrect argument type - bill_amount should be a number but is passed as a string",
+  "packs": ["core.tool-use.v1"],
+  "expected_violations": [
+    {
+      "policy_id": "tool-args-valid",
+      "rule_id": "args-match-schema",
+      "node_id": "tc1",
+      "message": "Argument 'bill_amount' has wrong type: expected number, got string"
+    }
+  ],
+  "notes": "This example demonstrates a common error where numeric arguments are passed as strings. The calculate_tip function expects bill_amount to be a number (100) but receives a string (\"100\")."
+}
+
+
+
+

@@ -1,0 +1,89 @@
+{
+  "pack_id": "core.citation-grounding.v1",
+  "name": "Citation Grounding",
+  "description": "Validates that factual claims are properly grounded with citations",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "policy_id": "factual-claims-cited",
+      "name": "Factual Claims Must Be Cited",
+      "description": "All factual claims must have supporting citations",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "factual-has-citation",
+          "description": "Every factual claim must have at least one citation",
+          "expression": {
+            "forall": {
+              "var": "c",
+              "in": "claims",
+              "condition": {
+                "implies": {
+                  "if": {
+                    "predicate": "is_factual",
+                    "args": ["c"]
+                  },
+                  "then": {
+                    "predicate": "has_citation",
+                    "args": ["c"]
+                  }
+                }
+              }
+            }
+          },
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "policy_id": "citation-format-valid",
+      "name": "Citation Format Valid",
+      "description": "Citations must be properly formatted",
+      "version": "1.0.0",
+      "rules": [
+        {
+          "rule_id": "citation-has-source",
+          "description": "Every citation must have a valid source",
+          "expression": {
+            "forall": {
+              "var": "cit",
+              "in": "citations",
+              "condition": {
+                "predicate": "has_valid_source",
+                "args": ["cit"]
+              }
+            }
+          },
+          "severity": "error"
+        },
+        {
+          "rule_id": "citation-refs-claim",
+          "description": "Every citation must reference an existing claim",
+          "expression": {
+            "forall": {
+              "var": "cit",
+              "in": "citations",
+              "condition": {
+                "predicate": "refs_existing_claim",
+                "args": ["cit"]
+              }
+            }
+          },
+          "severity": "error"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "author": "Superficial Labs",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/superficiallabs/cape",
+    "tags": ["citations", "grounding", "factuality", "core"],
+    "created": "2025-12-01",
+    "updated": "2025-12-01"
+  }
+}
+
+
+
+

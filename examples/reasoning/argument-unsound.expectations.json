@@ -1,0 +1,29 @@
+{
+  "description": "Logically valid argument from false premise (all birds can fly is false)",
+  "packs": [],
+  "verifiers": ["verifier.reasoning.argument_soundness"],
+  "expected_verifier_output": {
+    "verifier_id": "verifier.reasoning.argument_soundness",
+    "evaluation": {
+      "premises_identified": true,
+      "premises_true": false,
+      "logic_valid": true,
+      "conclusion_supported": false
+    },
+    "issues": [
+      {
+        "location": "c1",
+        "description": "Premise 'All birds can fly' is factually false. Many birds (penguins, ostriches, kiwis, emus) cannot fly.",
+        "severity": "fatal",
+        "issue_type": "false_premise"
+      }
+    ],
+    "score": 0.0,
+    "reasoning": "While the argument is logically valid (the conclusion follows from the premises via syllogistic reasoning), it is unsound because Premise 1 is factually false. Not all birds can fly - penguins, ostriches, kiwis, emus, and several other bird species are flightless. The argument demonstrates valid deductive form but reaches a false conclusion due to a false premise."
+  },
+  "notes": "This example tests detection of unsound arguments due to false premises. The logical structure is valid (it's a valid syllogism), but the argument is unsound because the first premise is false. This is a classic example used in logic education to distinguish validity from soundness."
+}
+
+
+
+

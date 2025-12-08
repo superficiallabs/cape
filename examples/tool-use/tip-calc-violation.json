@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0.0",
+  "output_id": "tool-use-001",
+  "text": "I'll calculate that tip for you.\n\ncalculate_tip(bill_amount=\"100\", tip_percentage=15)\n\nThe tip on $100 at 15% would be $15.",
+  "entities": [
+    {
+      "id": "e1",
+      "text": "$100",
+      "type": "CURRENCY",
+      "span": { "start": 77, "end": 81 }
+    },
+    {
+      "id": "e2",
+      "text": "15%",
+      "type": "PERCENTAGE",
+      "span": { "start": 85, "end": 88 }
+    },
+    {
+      "id": "e3",
+      "text": "$15",
+      "type": "CURRENCY",
+      "span": { "start": 100, "end": 103 }
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "text": "The tip on $100 at 15% would be $15",
+      "modality": "factual",
+      "domain": "arithmetic",
+      "span": { "start": 90, "end": 125 },
+      "entity_refs": ["e1", "e2", "e3"]
+    }
+  ],
+  "operations": [
+    {
+      "id": "op1",
+      "type": "arithmetic",
+      "operator": "percentage",
+      "operands": [100, 15],
+      "result": 15,
+      "span": { "start": 33, "end": 88 }
+    }
+  ],
+  "tool_calls": [
+    {
+      "id": "tc1",
+      "name": "calculate_tip",
+      "arguments": {
+        "bill_amount": "100",
+        "tip_percentage": 15
+      },
+      "span": { "start": 33, "end": 88 }
+    }
+  ],
+  "citations": [],
+  "code_blocks": [],
+  "discourse_acts": [
+    {
+      "id": "da1",
+      "type": "ACKNOWLEDGMENT",
+      "span": { "start": 0, "end": 32 },
+      "claim_refs": [],
+      "children": []
+    },
+    {
+      "id": "da2",
+      "type": "ASSERTION",
+      "span": { "start": 90, "end": 125 },
+      "claim_refs": ["c1"],
+      "children": []
+    }
+  ],
+  "context": {
+    "user_query": "Calculate a 15% tip on $100",
+    "tools_available": ["calculate_tip"]
+  }
+}
+
+
+
+

@@ -1,0 +1,29 @@
+{
+  "description": "Customer support response that fails to acknowledge the customer's frustration about waiting",
+  "packs": ["example.customer-support.v1"],
+  "expected_violations": [
+    {
+      "policy_id": "greeting-required",
+      "rule_id": "has-greeting",
+      "node_id": null,
+      "message": "Response does not include a greeting"
+    },
+    {
+      "policy_id": "acknowledgment-required",
+      "rule_id": "has-acknowledgment",
+      "node_id": null,
+      "message": "Response does not acknowledge the customer's concern"
+    },
+    {
+      "policy_id": "closing-required",
+      "rule_id": "has-closing",
+      "node_id": null,
+      "message": "Response does not include a proper closing"
+    }
+  ],
+  "notes": "This example demonstrates a customer support response that, while factually accurate, fails to meet quality standards. The customer expressed frustration about waiting over a week, but the response immediately jumps to order status without acknowledging their frustration, providing a greeting, or offering a closing. A better response would be: 'Hello! I'm sorry to hear you've been waiting so long for your order - I understand how frustrating that must be. Let me look into this for you. [order info] Is there anything else I can help you with?'"
+}
+
+
+
+

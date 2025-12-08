@@ -1,0 +1,322 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://superficiallabs.com/schemas/predicate-graph-v1.0.0.json",
+  "title": "PredicateGraph",
+  "description": "A structured representation of an AI model's output for policy evaluation",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "output_id",
+    "text",
+    "entities",
+    "claims",
+    "operations",
+    "tool_calls",
+    "citations",
+    "code_blocks",
+    "discourse_acts"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Schema version (semver format)"
+    },
+    "output_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this output"
+    },
+    "text": {
+      "type": "string",
+      "description": "Original model output text"
+    },
+    "entities": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/entity" },
+      "description": "Extracted entities"
+    },
+    "claims": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/claim" },
+      "description": "Extracted claims"
+    },
+    "operations": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/operation" },
+      "description": "Mathematical/logical operations"
+    },
+    "tool_calls": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/tool_call" },
+      "description": "Tool/function calls"
+    },
+    "citations": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/citation" },
+      "description": "Source citations"
+    },
+    "code_blocks": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/code_block" },
+      "description": "Code snippets"
+    },
+    "discourse_acts": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/discourse_act" },
+      "description": "Discourse structure"
+    },
+    "context": {
+      "$ref": "#/definitions/context",
+      "description": "Request context"
+    }
+  },
+  "definitions": {
+    "span": {
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Inclusive start character offset (0-indexed)"
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Exclusive end character offset"
+        }
+      },
+      "additionalProperties": false
+    },
+    "entity": {
+      "type": "object",
+      "required": ["id", "text", "type", "span"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^e\\d+$",
+          "description": "Unique entity identifier"
+        },
+        "text": {
+          "type": "string",
+          "description": "Entity surface form"
+        },
+        "type": {
+          "type": "string",
+          "description": "Entity type"
+        },
+        "span": { "$ref": "#/definitions/span" },
+        "attributes": {
+          "type": "object",
+          "description": "Additional properties"
+        }
+      },
+      "additionalProperties": false
+    },
+    "claim": {
+      "type": "object",
+      "required": ["id", "text", "modality", "span"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^c\\d+$",
+          "description": "Unique claim identifier"
+        },
+        "text": {
+          "type": "string",
+          "description": "Claim text"
+        },
+        "modality": {
+          "type": "string",
+          "enum": ["factual", "opinion", "conditional", "hypothetical", "instruction"],
+          "description": "Claim type"
+        },
+        "domain": {
+          "type": "string",
+          "description": "Subject domain"
+        },
+        "span": { "$ref": "#/definitions/span" },
+        "entity_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Referenced entity IDs"
+        },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Supporting evidence"
+        }
+      },
+      "additionalProperties": false
+    },
+    "operation": {
+      "type": "object",
+      "required": ["id", "type", "operator", "operands", "result", "span"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^op\\d+$",
+          "description": "Unique operation identifier"
+        },
+        "type": {
+          "type": "string",
+          "description": "Operation type"
+        },
+        "operator": {
+          "type": "string",
+          "description": "Specific operator"
+        },
+        "operands": {
+          "type": "array",
+          "items": {},
+          "description": "Input values"
+        },
+        "result": {
+          "description": "Computed result"
+        },
+        "span": { "$ref": "#/definitions/span" }
+      },
+      "additionalProperties": false
+    },
+    "tool_call": {
+      "type": "object",
+      "required": ["id", "name", "arguments", "span"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^tc\\d+$",
+          "description": "Unique tool call identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Function name"
+        },
+        "arguments": {
+          "type": "object",
+          "description": "Function arguments"
+        },
+        "span": { "$ref": "#/definitions/span" }
+      },
+      "additionalProperties": false
+    },
+    "citation": {
+      "type": "object",
+      "required": ["id", "claim_id", "source"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^cit\\d+$",
+          "description": "Unique citation identifier"
+        },
+        "claim_id": {
+          "type": "string",
+          "description": "Referenced claim ID"
+        },
+        "source": {
+          "type": "object",
+          "required": ["type", "value"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["url", "document", "reference"],
+              "description": "Source type"
+            },
+            "value": {
+              "type": "string",
+              "description": "Source value"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Source information"
+        },
+        "span": { "$ref": "#/definitions/span" }
+      },
+      "additionalProperties": false
+    },
+    "code_block": {
+      "type": "object",
+      "required": ["id", "language", "code", "span"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^cb\\d+$",
+          "description": "Unique code block identifier"
+        },
+        "language": {
+          "type": "string",
+          "description": "Programming language"
+        },
+        "code": {
+          "type": "string",
+          "description": "Code content"
+        },
+        "span": { "$ref": "#/definitions/span" }
+      },
+      "additionalProperties": false
+    },
+    "discourse_act": {
+      "type": "object",
+      "required": ["id", "type", "span"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^da\\d+$",
+          "description": "Unique discourse act identifier"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "GREETING",
+            "ACKNOWLEDGMENT",
+            "CLARIFICATION",
+            "EXPLANATION",
+            "REASONING",
+            "ASSERTION",
+            "INSTRUCTION",
+            "WARNING",
+            "SUMMARY",
+            "CLOSING"
+          ],
+          "description": "Act type"
+        },
+        "span": { "$ref": "#/definitions/span" },
+        "claim_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Referenced claim IDs"
+        },
+        "children": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Child discourse act IDs"
+        }
+      },
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "user_query": {
+          "type": "string",
+          "description": "Original user query"
+        },
+        "system_prompt": {
+          "type": "string",
+          "description": "System prompt used"
+        },
+        "tools_available": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Available tools"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
+
+
+
+

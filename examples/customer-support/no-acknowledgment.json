@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0.0",
+  "output_id": "support-001",
+  "text": "Your order #12345 was shipped yesterday via FedEx. The tracking number is 1234567890. Delivery is expected by Friday.",
+  "entities": [
+    {
+      "id": "e1",
+      "text": "#12345",
+      "type": "ORDER_NUMBER",
+      "span": { "start": 11, "end": 17 }
+    },
+    {
+      "id": "e2",
+      "text": "FedEx",
+      "type": "ORGANIZATION",
+      "span": { "start": 44, "end": 49 }
+    },
+    {
+      "id": "e3",
+      "text": "1234567890",
+      "type": "TRACKING_NUMBER",
+      "span": { "start": 74, "end": 84 }
+    },
+    {
+      "id": "e4",
+      "text": "Friday",
+      "type": "DATE",
+      "span": { "start": 111, "end": 117 }
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "text": "Order #12345 was shipped yesterday",
+      "modality": "factual",
+      "domain": "order-fulfillment",
+      "span": { "start": 0, "end": 41 },
+      "entity_refs": ["e1"]
+    },
+    {
+      "id": "c2",
+      "text": "Order was shipped via FedEx",
+      "modality": "factual",
+      "domain": "shipping",
+      "span": { "start": 42, "end": 49 },
+      "entity_refs": ["e2"]
+    },
+    {
+      "id": "c3",
+      "text": "Tracking number is 1234567890",
+      "modality": "factual",
+      "domain": "shipping",
+      "span": { "start": 51, "end": 84 },
+      "entity_refs": ["e3"]
+    },
+    {
+      "id": "c4",
+      "text": "Delivery is expected by Friday",
+      "modality": "factual",
+      "domain": "shipping",
+      "span": { "start": 86, "end": 118 },
+      "entity_refs": ["e4"]
+    }
+  ],
+  "operations": [],
+  "tool_calls": [],
+  "citations": [],
+  "code_blocks": [],
+  "discourse_acts": [
+    {
+      "id": "da1",
+      "type": "ASSERTION",
+      "span": { "start": 0, "end": 84 },
+      "claim_refs": ["c1", "c2", "c3"],
+      "children": []
+    },
+    {
+      "id": "da2",
+      "type": "ASSERTION",
+      "span": { "start": 86, "end": 118 },
+      "claim_refs": ["c4"],
+      "children": []
+    }
+  ],
+  "context": {
+    "user_query": "I've been waiting for my order #12345 for over a week now. Where is it?"
+  }
+}
+
+
+
+

@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "output_id": "reasoning-001",
+  "text": "Let me work through this step by step.\n\nStep 1: All birds can fly.\nStep 2: Penguins are birds.\nStep 3: Therefore, penguins can fly.\n\nThis follows logically from the premises.",
+  "entities": [
+    {
+      "id": "e1",
+      "text": "birds",
+      "type": "CATEGORY",
+      "span": { "start": 54, "end": 59 }
+    },
+    {
+      "id": "e2",
+      "text": "Penguins",
+      "type": "SPECIES",
+      "span": { "start": 76, "end": 84 }
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "text": "All birds can fly",
+      "modality": "factual",
+      "domain": "general",
+      "span": { "start": 48, "end": 65 }
+    },
+    {
+      "id": "c2",
+      "text": "Penguins are birds",
+      "modality": "factual",
+      "domain": "general",
+      "span": { "start": 75, "end": 93 }
+    },
+    {
+      "id": "c3",
+      "text": "Penguins can fly",
+      "modality": "factual",
+      "domain": "general",
+      "span": { "start": 106, "end": 132 }
+    }
+  ],
+  "operations": [],
+  "tool_calls": [],
+  "citations": [],
+  "code_blocks": [],
+  "discourse_acts": [
+    {
+      "id": "da1",
+      "type": "REASONING",
+      "span": { "start": 0, "end": 133 },
+      "claim_refs": ["c1", "c2", "c3"],
+      "children": []
+    },
+    {
+      "id": "da2",
+      "type": "ASSERTION",
+      "span": { "start": 135, "end": 175 },
+      "claim_refs": [],
+      "children": []
+    }
+  ],
+  "context": {
+    "user_query": "Can penguins fly? Please reason through this."
+  }
+}
+
+
+
+

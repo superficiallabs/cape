@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://superficiallabs.com/schemas/policy-pack-v1.0.0.json",
+  "title": "Policy Pack",
+  "description": "A versioned collection of related CPL policies",
+  "type": "object",
+  "required": ["pack_id", "name", "description", "version", "policies"],
+  "properties": {
+    "pack_id": {
+      "type": "string",
+      "pattern": "^[a-z]+\\.[a-z-]+\\.v\\d+$",
+      "description": "Unique pack identifier (format: scope.capability.vN)"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Pack description"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Pack version (semver)"
+    },
+    "policies": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/policy" },
+      "minItems": 1,
+      "description": "Included policies"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/dependency" },
+      "description": "Required packs"
+    },
+    "metadata": {
+      "$ref": "#/definitions/metadata",
+      "description": "Additional metadata"
+    }
+  },
+  "definitions": {
+    "policy": {
+      "type": "object",
+      "required": ["policy_id", "name", "description", "version", "rules"],
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique policy identifier"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Policy description"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Policy version (semver)"
+        },
+        "rules": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/rule" },
+          "minItems": 1,
+          "description": "Policy rules"
+        },
+        "custom_predicates": {
+          "type": "object",
+          "description": "Custom predicate definitions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rule": {
+      "type": "object",
+      "required": ["rule_id", "description", "expression"],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique rule identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description"
+        },
+        "expression": {
+          "type": "object",
+          "description": "Logical expression"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning", "info"],
+          "default": "error",
+          "description": "Violation severity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "dependency": {
+      "type": "object",
+      "required": ["pack_id", "version"],
+      "properties": {
+        "pack_id": {
+          "type": "string",
+          "description": "Required pack identifier"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version constraint"
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "author": { "type": "string" },
+        "license": { "type": "string" },
+        "homepage": { "type": "string", "format": "uri" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "created": { "type": "string", "format": "date" },
+        "updated": { "type": "string", "format": "date" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
+
+
+
+
