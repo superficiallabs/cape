@@ -18,6 +18,41 @@ The theme-factory skill asks for "professional" and "consistent" themes. We inte
 
 ---
 
+## Configuration Profiles
+
+These thresholds define what "professional" means for your context:
+
+**Design system:**
+- `min_contrast_text: 4.5`
+- `min_contrast_ui: 3.0`
+- `min_base_font_size: 16`
+- `min_line_height: 1.5`
+- `max_font_families: 2`
+- `min_spacing_adherence: 0.9`
+- `max_primary_colors: 4`
+
+**Marketing site:**
+- `min_contrast_text: 4.5`
+- `min_contrast_ui: 3.0`
+- `min_base_font_size: 16`
+- `min_line_height: 1.6`
+- `max_font_families: 3`
+- `min_spacing_adherence: 0.8`
+- `max_primary_colors: 5`
+
+**MVP product:**
+- `min_contrast_text: 4.5`
+- `min_contrast_ui: 3.0`
+- `min_base_font_size: 14`
+- `min_line_height: 1.4`
+- `max_font_families: 3`
+- `min_spacing_adherence: 0.7`
+- `max_primary_colors: 6`
+
+The policy doesn't define quality—you do. These predicates verify your definition objectively.
+
+---
+
 ## Assumption 1: Text Contrast (Accessibility)
 
 **Original guidance:**

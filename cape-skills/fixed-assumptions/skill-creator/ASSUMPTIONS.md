@@ -16,6 +16,35 @@ The skill-creator skill asks for "effective" skills with "clear and comprehensiv
 
 ---
 
+## Configuration Profiles
+
+These thresholds define what "effective" means for your context:
+
+**Public library skill:**
+- `min_description_chars: 100`
+- `max_description_chars: 400`
+- `min_instruction_words: 200`
+- `min_examples: 3`
+- `min_guidelines: 2`
+
+**Internal team skill:**
+- `min_description_chars: 50`
+- `max_description_chars: 500`
+- `min_instruction_words: 100`
+- `min_examples: 2`
+- `min_guidelines: 1`
+
+**Personal tooling skill:**
+- `min_description_chars: 30`
+- `max_description_chars: 600`
+- `min_instruction_words: 50`
+- `min_examples: 1`
+- `min_guidelines: 0`
+
+The policy doesn't define quality—you do. These predicates verify your definition objectively.
+
+---
+
 ## Assumption 1: Description Length (Clarity)
 
 **Original guidance:**

@@ -16,6 +16,38 @@ The frontend-design skill contains Anthropic's most explicit anti-slop guidance:
 
 ---
 
+## Configuration Profiles
+
+These thresholds define what "quality" means for your context:
+
+**High-end agency work:**
+- `min_border_radius_variety: 4`
+- `min_color_count: 6`
+- `max_color_count: 10`
+- `max_font_families: 2`
+- `min_font_size_variety: 4`
+- `min_breakpoints: 3`
+
+**Internal tooling:**
+- `min_border_radius_variety: 2`
+- `min_color_count: 4`
+- `max_color_count: 12`
+- `max_font_families: 3`
+- `min_font_size_variety: 3`
+- `min_breakpoints: 2`
+
+**Rapid prototyping:**
+- `min_border_radius_variety: 1`
+- `min_color_count: 3`
+- `max_color_count: 15`
+- `max_font_families: 4`
+- `min_font_size_variety: 2`
+- `min_breakpoints: 1`
+
+The policy doesn't define quality—you do. These predicates verify your definition objectively.
+
+---
+
 ## Assumption 1: Border-Radius Variety (Anti-Slop)
 
 **Original guidance:**

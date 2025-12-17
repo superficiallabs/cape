@@ -16,6 +16,32 @@ The internal-comms skill asks for "professional," "clear," and "concise" communi
 
 ---
 
+## Configuration Profiles
+
+These thresholds define what "professional" means for your context:
+
+**Executive communications:**
+- `max_reading_grade: 8`
+- `max_sentence_length: 20`
+- `min_sentiment_score: 0.1`
+- `word_limits.announcement: { min: 150, max: 400 }`
+
+**Team updates:**
+- `max_reading_grade: 10`
+- `max_sentence_length: 25`
+- `min_sentiment_score: 0.0`
+- `word_limits.status_report: { min: 200, max: 800 }`
+
+**Quick announcements:**
+- `max_reading_grade: 12`
+- `max_sentence_length: 30`
+- `min_sentiment_score: -0.1`
+- `word_limits.announcement: { min: 50, max: 300 }`
+
+The policy doesn't define quality—you do. These predicates verify your definition objectively.
+
+---
+
 ## Assumption 1: No Slang (Professionalism)
 
 **Original guidance:**

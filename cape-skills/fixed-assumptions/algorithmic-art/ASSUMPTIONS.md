@@ -16,6 +16,29 @@ The algorithmic-art skill asks for "gallery-quality computational art." This is 
 
 ---
 
+## Configuration Profiles
+
+These thresholds define what "quality" means for your context:
+
+**Gallery submission:**
+- `min_color_calls: 5`
+- `min_shape_variety: 4`
+- `min_transform_calls: 3`
+
+**Educational demo:**
+- `min_color_calls: 2`
+- `min_shape_variety: 2`
+- `min_transform_calls: 1`
+
+**Minimalist study:**
+- `min_color_calls: 1`
+- `min_shape_variety: 1`
+- `min_transform_calls: 0`
+
+The policy doesn't define quality—you do. These predicates verify your definition objectively.
+
+---
+
 ## Assumption 1: Intentional Color Work
 
 **Original guidance:**

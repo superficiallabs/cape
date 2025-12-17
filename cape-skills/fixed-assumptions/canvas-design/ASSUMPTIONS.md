@@ -16,6 +16,38 @@ The canvas-design skill asks for "beautiful visual art" following "design philos
 
 ---
 
+## Configuration Profiles
+
+These thresholds define what "quality" means for your context:
+
+**Print production:**
+- `min_unique_colors: 4`
+- `max_unique_colors: 15`
+- `min_visual_balance: 0.35`
+- `max_visual_balance: 0.65`
+- `min_dominant_color_ratio: 0.15`
+- `min_dpi: 300`
+
+**Social media graphics:**
+- `min_unique_colors: 3`
+- `max_unique_colors: 20`
+- `min_visual_balance: 0.3`
+- `max_visual_balance: 0.7`
+- `min_dominant_color_ratio: 0.1`
+- `min_dpi: 72`
+
+**Sketch exploration:**
+- `min_unique_colors: 2`
+- `max_unique_colors: 30`
+- `min_visual_balance: 0.2`
+- `max_visual_balance: 0.8`
+- `min_dominant_color_ratio: 0.05`
+- `min_dpi: 72`
+
+The policy doesn't define quality—you do. These predicates verify your definition objectively.
+
+---
+
 ## Assumption 1: Intentional Color Palette (Variety)
 
 **Original guidance:**
