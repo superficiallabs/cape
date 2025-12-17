@@ -1,0 +1,182 @@
+{
+  "id": "capability.mcp_builder",
+  "version": "1.0.0",
+  "description": "Create MCP servers to integrate external APIs and services",
+  "source": "anthropics/skills/mcp-builder",
+  
+  "configuration": {
+    "require_type_hints": true,
+    "min_doc_coverage": 1.0,
+    "required_endpoints": ["list_tools", "call_tool"],
+    "secret_patterns": ["api_key", "password", "secret", "token", "credential"]
+  },
+  
+  "scope": {
+    "kind": "code_output",
+    "filter": { "type": "mcp_server" }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.mcp_builder.has_manifest",
+      "tier": "T1",
+      "description": "Server must have a valid MCP manifest",
+      "assert": [
+        { "expr": "manifest_exists(server) == true", "msg": "Missing MCP manifest" },
+        { "expr": "manifest_schema_valid(server) == true", "msg": "Manifest does not conform to MCP schema" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Create valid manifest.json following MCP specification"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.required_endpoints",
+      "tier": "T1",
+      "description": "Server must implement required MCP endpoints",
+      "assert": [
+        { "expr": "has_endpoint_handler(server, 'list_tools') == true", "msg": "Missing required endpoint handler: list_tools" },
+        { "expr": "has_endpoint_handler(server, 'call_tool') == true", "msg": "Missing required endpoint handler: call_tool" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Implement required MCP endpoint handlers: list_tools, call_tool"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.tools_declared",
+      "tier": "T1",
+      "description": "All tools in manifest must have corresponding handlers",
+      "assert": [
+        { "expr": "tools_without_handlers_count(server) == 0", "msg": "Tools declared but not implemented: {tools_without_handlers}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Implement handlers for all tools declared in manifest"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.valid_tool_schemas",
+      "tier": "T1",
+      "description": "All tool input/output schemas must be valid JSON Schema",
+      "assert": [
+        { "expr": "invalid_tool_schema_count(server) == 0", "msg": "Invalid tool schemas: {invalid_schemas}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix JSON Schema definitions for tool inputs and outputs"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.no_hardcoded_secrets",
+      "tier": "T2",
+      "description": "Server must not contain hardcoded secrets",
+      "assert": [
+        { "expr": "hardcoded_secret_count(server, config.secret_patterns) == 0", "msg": "Hardcoded secrets detected: {secret_locations}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Move secrets to environment variables: process.env.API_KEY or os.environ['API_KEY']"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.input_validation",
+      "tier": "T2",
+      "description": "All tool inputs must be validated",
+      "assert": [
+        { "expr": "tools_without_input_validation_count(server) == 0", "msg": "Tools missing input validation: {unvalidated_tools}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add input validation using JSON Schema, Zod, or Pydantic for all tool arguments"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.no_sql_injection",
+      "tier": "T2",
+      "description": "Server must not have SQL injection vulnerabilities",
+      "assert": [
+        { "expr": "sql_injection_risk_count(server) == 0", "msg": "Potential SQL injection: {sql_injection_locations}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use parameterized queries instead of string concatenation"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.no_command_injection",
+      "tier": "T2",
+      "description": "Server must not have command injection vulnerabilities",
+      "assert": [
+        { "expr": "command_injection_risk_count(server) == 0", "msg": "Potential command injection: {command_injection_locations}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Avoid shell execution with user input; use safe APIs instead"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.no_lint_errors",
+      "tier": "T3",
+      "description": "Code should pass linting",
+      "assert": [
+        { "expr": "lint_error_count(server) == 0", "msg": "Lint errors: {lint_error_count} issues found" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix lint errors (ESLint for JS/TS, Ruff/Pylint for Python)"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.type_annotations",
+      "tier": "T3",
+      "description": "Code should have type annotations",
+      "where": [
+        { "expr": "config.require_type_hints == true" }
+      ],
+      "assert": [
+        { "expr": "type_annotation_coverage(server) >= 0.9", "msg": "Insufficient type coverage ({type_annotation_coverage}% < 90%)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add type annotations to function signatures and variables"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.readme_exists",
+      "tier": "T3",
+      "description": "Server should have a README",
+      "assert": [
+        { "expr": "readme_exists(server) == true", "msg": "Missing README file" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Create README.md with setup instructions and tool documentation"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.tool_descriptions",
+      "tier": "T3",
+      "description": "All tools should have descriptions",
+      "assert": [
+        { "expr": "tool_description_coverage(server) >= config.min_doc_coverage", "msg": "Tool documentation incomplete ({tool_description_coverage}% < {config.min_doc_coverage}%)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add descriptions to all tools in manifest"
+      }
+    },
+    {
+      "id": "policy.mcp_builder.error_handling",
+      "tier": "T3",
+      "description": "Tools should have error handling",
+      "assert": [
+        { "expr": "tools_without_error_handling_count(server) == 0", "msg": "Tools missing error handling: {unhandled_tools}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add try/catch blocks and return proper error responses"
+      }
+    }
+  ]
+}

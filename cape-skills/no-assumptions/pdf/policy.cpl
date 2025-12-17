@@ -1,0 +1,164 @@
+{
+  "id": "capability.pdf",
+  "version": "1.0.0",
+  "description": "Extract, create, merge, split, and fill PDF documents with ISO 32000 compliance",
+  "source": "anthropics/skills/document-skills/pdf",
+  
+  "configuration": {
+    "min_pdf_version": 1.4,
+    "max_file_size_mb": 100
+  },
+  
+  "scope": {
+    "kind": "output_file",
+    "filter": { "extension": "pdf" }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.pdf.valid_structure",
+      "tier": "T1",
+      "description": "File must be valid PDF structure",
+      "assert": [
+        { "expr": "starts_with_pdf_header(file) == true", "msg": "Missing %PDF header" },
+        { "expr": "ends_with_eof_marker(file) == true", "msg": "Missing %%EOF trailer" },
+        { "expr": "has_valid_xref(file) == true", "msg": "Invalid or missing XRef table" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Regenerate file with proper PDF structure"
+      }
+    },
+    {
+      "id": "policy.pdf.parser_succeeds",
+      "tier": "T1",
+      "description": "File must be parseable by standard PDF libraries",
+      "assert": [
+        { "expr": "pdf_parser_succeeds(file) == true", "msg": "File rejected by PDF parser" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix PDF structure; current output is not parseable"
+      }
+    },
+    {
+      "id": "policy.pdf.version_supported",
+      "tier": "T1",
+      "description": "PDF version must meet minimum requirement",
+      "assert": [
+        { "expr": "pdf_version(file) >= config.min_pdf_version", "msg": "PDF version {pdf_version} below minimum {config.min_pdf_version}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Generate PDF with version 1.4 or higher"
+      }
+    },
+    {
+      "id": "policy.pdf.text_extractable",
+      "tier": "T1",
+      "description": "Text content must be extractable",
+      "where": [
+        { "expr": "has_text_content(file) == true" }
+      ],
+      "assert": [
+        { "expr": "text_extraction_succeeds(file) == true", "msg": "Text extraction failed" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Ensure text is embedded as text objects, not images"
+      }
+    },
+    {
+      "id": "policy.pdf.form_filled_correctly",
+      "tier": "T2",
+      "description": "Form field values must match requested values",
+      "where": [
+        { "expr": "is_form_fill_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "form_field_mismatch_count(file, ctx.field_values) == 0", "msg": "Form field values don't match: {mismatched_fields}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Set form field values to match requested values exactly"
+      }
+    },
+    {
+      "id": "policy.pdf.form_fields_typed",
+      "tier": "T2",
+      "description": "Form fields must have correct types",
+      "where": [
+        { "expr": "is_form_fill_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "form_field_type_errors(file) == 0", "msg": "Form field type errors: {type_errors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Ensure values match field types (text, checkbox, dropdown, etc.)"
+      }
+    },
+    {
+      "id": "policy.pdf.merge_pages_intact",
+      "tier": "T2",
+      "description": "Merged PDF must contain all pages from sources",
+      "where": [
+        { "expr": "is_merge_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "page_count(file) == sum_page_counts(ctx.sources)", "msg": "Page count mismatch: merged has {page_count}, expected {expected_pages}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Ensure all pages from source documents are included"
+      }
+    },
+    {
+      "id": "policy.pdf.split_complete",
+      "tier": "T2",
+      "description": "Split parts must account for all pages",
+      "where": [
+        { "expr": "is_split_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "sum_page_counts(ctx.parts) == page_count(ctx.original)", "msg": "Split incomplete: parts have {part_pages} pages, original has {original_pages}" },
+        { "expr": "no_duplicate_pages(ctx.parts) == true", "msg": "Duplicate pages detected across split parts" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Ensure all pages are distributed across parts with no duplicates"
+      }
+    },
+    {
+      "id": "policy.pdf.form_structure_preserved",
+      "tier": "T2",
+      "description": "Form field structure must be preserved during fill",
+      "where": [
+        { "expr": "is_form_fill_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "form_field_names(file) == form_field_names(ctx.input)", "msg": "Form structure modified: fields added or removed" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fill form without modifying field structure"
+      }
+    },
+    {
+      "id": "policy.pdf.metadata_preserved",
+      "tier": "T2",
+      "description": "Document metadata must be preserved during edits",
+      "where": [
+        { "expr": "is_edit_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "title_preserved(ctx.input, file) == true", "msg": "Document title lost" },
+        { "expr": "author_preserved(ctx.input, file) == true", "msg": "Document author lost" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Preserve original document metadata"
+      }
+    }
+  ]
+}

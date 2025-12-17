@@ -1,0 +1,154 @@
+{
+  "id": "capability.pptx",
+  "version": "1.0.0",
+  "description": "Create and edit PowerPoint presentations with verifiable OOXML structure",
+  "source": "anthropics/skills/document-skills/pptx",
+  
+  "configuration": {
+    "max_file_size_mb": 100,
+    "require_speaker_notes": false
+  },
+  
+  "scope": {
+    "kind": "output_file",
+    "filter": { "extension": "pptx" }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.pptx.valid_structure",
+      "tier": "T1",
+      "description": "File must be valid OOXML structure",
+      "assert": [
+        { "expr": "is_zip_archive(file) == true", "msg": "File is not a valid ZIP archive" },
+        { "expr": "contains_file(file, 'ppt/presentation.xml') == true", "msg": "Missing ppt/presentation.xml" },
+        { "expr": "contains_file(file, '[Content_Types].xml') == true", "msg": "Missing [Content_Types].xml" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Regenerate file with proper OOXML structure"
+      }
+    },
+    {
+      "id": "policy.pptx.xml_wellformed",
+      "tier": "T1",
+      "description": "XML content must be well-formed",
+      "assert": [
+        { "expr": "xml_wellformed(file, 'ppt/presentation.xml') == true", "msg": "XML syntax error in presentation.xml" },
+        { "expr": "xml_parse_error_count(file) == 0", "msg": "XML parse errors: {xml_errors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix XML syntax errors in presentation content"
+      }
+    },
+    {
+      "id": "policy.pptx.schema_valid",
+      "tier": "T1",
+      "description": "XML must conform to PresentationML schema",
+      "assert": [
+        { "expr": "xml_schema_valid(file, 'pml.xsd') == true", "msg": "Presentation does not conform to OOXML schema" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Ensure XML conforms to PresentationML schema (ECMA-376)"
+      }
+    },
+    {
+      "id": "policy.pptx.slides_complete",
+      "tier": "T1",
+      "description": "All slides must have complete structure",
+      "assert": [
+        { "expr": "malformed_slide_count(file) == 0", "msg": "Malformed slides: {malformed_slides}" },
+        { "expr": "broken_shape_reference_count(file) == 0", "msg": "Broken shape references: {broken_refs}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix corrupt shape definitions or invalid geometry coordinates"
+      }
+    },
+    {
+      "id": "policy.pptx.media_embedded",
+      "tier": "T2",
+      "description": "All media references must resolve",
+      "assert": [
+        { "expr": "missing_media_count(file) == 0", "msg": "Missing media files: {missing_media}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Embed missing media files or remove broken references"
+      }
+    },
+    {
+      "id": "policy.pptx.charts_have_data",
+      "tier": "T2",
+      "description": "All charts must have valid data",
+      "where": [
+        { "expr": "has_charts(file) == true" }
+      ],
+      "assert": [
+        { "expr": "charts_missing_data_count(file) == 0", "msg": "Charts missing data: {charts_missing_data}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Populate chart data series"
+      }
+    },
+    {
+      "id": "policy.pptx.slide_count_preserved",
+      "tier": "T2",
+      "description": "Slide count must match expected result after operations",
+      "where": [
+        { "expr": "is_edit_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "slide_count_matches_expected(file, ctx) == true", "msg": "Unexpected slide count: {actual_count} vs expected {expected_count}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Restore missing slides or remove unintended additions"
+      }
+    },
+    {
+      "id": "policy.pptx.layouts_applied",
+      "tier": "T2",
+      "description": "Slide layouts must be properly applied",
+      "assert": [
+        { "expr": "slides_with_invalid_layout_count(file) == 0", "msg": "Slides with invalid layouts: {invalid_layout_slides}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Apply valid slide layouts from master"
+      }
+    },
+    {
+      "id": "policy.pptx.speaker_notes_preserved",
+      "tier": "T2",
+      "description": "Speaker notes must be preserved during edits",
+      "where": [
+        { "expr": "is_edit_operation(ctx) == true" },
+        { "expr": "has_speaker_notes(ctx.input) == true" }
+      ],
+      "assert": [
+        { "expr": "speaker_notes_preserved(ctx.input, file) == true", "msg": "Speaker notes lost during editing" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Preserve speaker notes from original presentation"
+      }
+    },
+    {
+      "id": "policy.pptx.template_consistent",
+      "tier": "T2",
+      "description": "Template usage must be consistent",
+      "assert": [
+        { "expr": "has_valid_master(file) == true", "msg": "No valid slide master found" },
+        { "expr": "orphaned_layout_count(file) == 0", "msg": "Orphaned layouts: {orphaned_layouts}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use consistent slide master; remove orphaned layouts"
+      }
+    }
+  ]
+}

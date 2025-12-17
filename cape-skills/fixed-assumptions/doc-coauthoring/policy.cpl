@@ -1,0 +1,119 @@
+{
+  "id": "capability.doc_coauthoring",
+  "version": "1.0.0",
+  "description": "Collaborative document creation with structure and content verification",
+  "source": "anthropics/skills/doc-coauthoring",
+  
+  "configuration": {
+    "allowed_formats": ["md", "docx", "txt", "pdf"],
+    "min_word_count": 100,
+    "min_section_count": 2,
+    "min_section_word_count": 20,
+    "max_heading_depth": 4
+  },
+  
+  "scope": {
+    "kind": "output_file",
+    "filter": { "type": ["md", "docx", "txt", "pdf"] }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.doc_coauthoring.document_exists",
+      "tier": "T1",
+      "description": "Session must produce a document output",
+      "assert": [
+        { "expr": "file_exists(output) == true", "msg": "No document file was generated" },
+        { "expr": "file_size(output) > 0", "msg": "Document file is empty" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Generate document output file"
+      }
+    },
+    {
+      "id": "policy.doc_coauthoring.valid_format",
+      "tier": "T1",
+      "description": "Output must be a supported document format",
+      "assert": [
+        { "expr": "format(output) in config.allowed_formats", "msg": "Invalid format '{format}'. Must be one of: {config.allowed_formats}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Export document as MD, DOCX, TXT, or PDF"
+      }
+    },
+    {
+      "id": "policy.doc_coauthoring.valid_structure",
+      "tier": "T1",
+      "description": "Document must have valid structure (parseable, well-formed)",
+      "assert": [
+        { "expr": "document_parseable(output) == true", "msg": "Document structure is malformed or unparseable" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix document structure (missing headers, broken formatting, etc.)"
+      }
+    },
+    {
+      "id": "policy.doc_coauthoring.minimum_content",
+      "tier": "T1",
+      "description": "Document must have meaningful content",
+      "assert": [
+        { "expr": "word_count(output) >= config.min_word_count", "msg": "Document too short ({word_count} words < {config.min_word_count} minimum)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Expand document content to meet minimum length"
+      }
+    },
+    {
+      "id": "policy.doc_coauthoring.has_sections",
+      "tier": "T1",
+      "description": "Document must be organized into sections",
+      "assert": [
+        { "expr": "section_count(output) >= config.min_section_count", "msg": "Document lacks structure ({section_count} sections < {config.min_section_count} minimum)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Organize document into distinct sections with headings"
+      }
+    },
+    {
+      "id": "policy.doc_coauthoring.sections_non_empty",
+      "tier": "T1",
+      "description": "All sections must have meaningful content",
+      "assert": [
+        { "expr": "min_section_word_count(output) >= config.min_section_word_count", "msg": "Document has empty or near-empty sections (minimum {config.min_section_word_count} words per section)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Expand sections with insufficient content"
+      }
+    },
+    {
+      "id": "policy.doc_coauthoring.heading_hierarchy",
+      "tier": "T3",
+      "description": "Headings should follow logical hierarchy (no skipped levels)",
+      "assert": [
+        { "expr": "heading_hierarchy_valid(output) == true", "msg": "Heading hierarchy broken (skipped levels or inconsistent nesting)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix heading levels: H1 → H2 → H3, don't skip levels"
+      }
+    },
+    {
+      "id": "policy.doc_coauthoring.reasonable_depth",
+      "tier": "T3",
+      "description": "Document should not have excessive heading depth",
+      "assert": [
+        { "expr": "max_heading_level(output) <= config.max_heading_depth", "msg": "Heading depth too deep (H{max_heading_level} exceeds H{config.max_heading_depth} limit)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Flatten document structure; avoid deeply nested headings"
+      }
+    }
+  ]
+}

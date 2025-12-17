@@ -1,0 +1,121 @@
+{
+  "id": "capability.webapp_testing",
+  "version": "1.0.0",
+  "description": "Write Playwright tests that follow testing best practices",
+  "source": "anthropics/skills/webapp-testing",
+  
+  "configuration": {
+    "min_assertions_per_test": 1,
+    "require_descriptive_names": true,
+    "max_test_length_lines": 50
+  },
+  
+  "scope": {
+    "kind": "code_output",
+    "filter": { "type": ["playwright_test", "spec.ts", "spec.js"] }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.webapp_testing.valid_syntax",
+      "tier": "T1",
+      "description": "Test code must be valid TypeScript/JavaScript",
+      "assert": [
+        { "expr": "syntax_valid(code) == true", "msg": "Invalid syntax in test file" },
+        { "expr": "parse_error_count(code) == 0", "msg": "Parse errors: {parse_errors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix syntax errors in test code"
+      }
+    },
+    {
+      "id": "policy.webapp_testing.has_tests",
+      "tier": "T1",
+      "description": "File must contain test definitions",
+      "assert": [
+        { "expr": "test_count(code) > 0", "msg": "No tests defined (missing test() or it() calls)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add test() or it() blocks with test logic"
+      }
+    },
+    {
+      "id": "policy.webapp_testing.has_assertions",
+      "tier": "T1",
+      "description": "Tests must contain assertions",
+      "assert": [
+        { "expr": "tests_without_assertions_count(code) == 0", "msg": "Tests without assertions: {tests_without_assertions}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add expect() assertions to verify behavior"
+      }
+    },
+    {
+      "id": "policy.webapp_testing.valid_playwright_api",
+      "tier": "T1",
+      "description": "Tests must use valid Playwright API",
+      "assert": [
+        { "expr": "invalid_playwright_method_count(code) == 0", "msg": "Invalid Playwright methods: {invalid_methods}" },
+        { "expr": "deprecated_playwright_method_count(code) == 0", "msg": "Deprecated Playwright methods: {deprecated_methods}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use valid Playwright API methods"
+      }
+    },
+    {
+      "id": "policy.webapp_testing.proper_async_await",
+      "tier": "T1",
+      "description": "Async operations must be properly awaited",
+      "assert": [
+        { "expr": "unawaited_async_count(code) == 0", "msg": "Unawaited async calls: {unawaited_calls}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add await to async Playwright methods (page.goto, page.click, etc.)"
+      }
+    },
+    {
+      "id": "policy.webapp_testing.descriptive_names",
+      "tier": "T3",
+      "description": "Tests should have descriptive names",
+      "where": [
+        { "expr": "config.require_descriptive_names == true" }
+      ],
+      "assert": [
+        { "expr": "generic_test_name_count(code) == 0", "msg": "Generic test names: {generic_names}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use descriptive test names like 'should display error when login fails'"
+      }
+    },
+    {
+      "id": "policy.webapp_testing.reasonable_length",
+      "tier": "T3",
+      "description": "Individual tests should not be too long",
+      "assert": [
+        { "expr": "tests_exceeding_length_count(code, config.max_test_length_lines) == 0", "msg": "Tests too long: {long_tests}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Break long tests into smaller focused tests or extract helper functions"
+      }
+    },
+    {
+      "id": "policy.webapp_testing.no_hardcoded_waits",
+      "tier": "T3",
+      "description": "Tests should not use hardcoded waits",
+      "assert": [
+        { "expr": "hardcoded_wait_count(code) == 0", "msg": "Hardcoded waits found: {hardcoded_waits}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Replace page.waitForTimeout() with proper waitFor conditions"
+      }
+    }
+  ]
+}

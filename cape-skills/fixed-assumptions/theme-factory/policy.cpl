@@ -1,0 +1,188 @@
+{
+  "id": "capability.theme_factory",
+  "version": "1.0.0",
+  "description": "Style artifacts with pre-set professional themes or generate custom themes",
+  "source": "anthropics/skills/theme-factory",
+  
+  "configuration": {
+    "min_contrast_text": 4.5,
+    "min_contrast_ui": 3.0,
+    "min_base_font_size": 14,
+    "min_line_height": 1.4,
+    "max_font_families": 3,
+    "min_spacing_adherence": 0.8,
+    "min_css_variables": 3,
+    "max_primary_colors": 5
+  },
+  
+  "scope": {
+    "kind": "css_output"
+  },
+  
+  "policies": [
+    {
+      "id": "policy.theme_factory.valid_css",
+      "tier": "T1",
+      "description": "Theme must be valid CSS",
+      "assert": [
+        { "expr": "css_syntax_valid(output) == true", "msg": "Invalid CSS syntax" },
+        { "expr": "css_parse_error_count(output) == 0", "msg": "CSS parse errors: {css_errors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix CSS syntax errors"
+      }
+    },
+    {
+      "id": "policy.theme_factory.valid_properties",
+      "tier": "T1",
+      "description": "All CSS properties must be valid",
+      "assert": [
+        { "expr": "invalid_property_count(output) == 0", "msg": "Invalid CSS properties: {invalid_properties}" },
+        { "expr": "invalid_value_count(output) == 0", "msg": "Invalid CSS values: {invalid_values}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix invalid CSS properties and values"
+      }
+    },
+    {
+      "id": "policy.theme_factory.theme_complete",
+      "tier": "T1",
+      "description": "Theme must define colors, typography, and spacing",
+      "assert": [
+        { "expr": "has_color_definitions(output) == true", "msg": "Missing color definitions" },
+        { "expr": "has_typography_definitions(output) == true", "msg": "Missing typography definitions" },
+        { "expr": "has_spacing_definitions(output) == true", "msg": "Missing spacing definitions" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add missing theme components: colors, typography, or spacing"
+      }
+    },
+    {
+      "id": "policy.theme_factory.text_contrast",
+      "tier": "T2",
+      "description": "Text color pairs must meet WCAG AA contrast requirements",
+      "assert": [
+        { "expr": "min_text_contrast_ratio(output) >= config.min_contrast_text", "msg": "Text contrast too low ({min_text_contrast_ratio} < {config.min_contrast_text})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Increase contrast between text and background colors (WCAG AA requires 4.5:1)"
+      }
+    },
+    {
+      "id": "policy.theme_factory.ui_contrast",
+      "tier": "T2",
+      "description": "UI element color pairs must meet WCAG AA contrast requirements",
+      "assert": [
+        { "expr": "min_ui_contrast_ratio(output) >= config.min_contrast_ui", "msg": "UI contrast too low ({min_ui_contrast_ratio} < {config.min_contrast_ui})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Increase contrast for UI elements (WCAG AA requires 3:1 for large text and UI)"
+      }
+    },
+    {
+      "id": "policy.theme_factory.dark_mode",
+      "tier": "T2",
+      "description": "Theme must support dark mode with accessible colors",
+      "assert": [
+        { "expr": "has_dark_mode_variant(output) == true", "msg": "Missing dark mode variant" },
+        { "expr": "dark_mode_contrast_valid(output) == true", "msg": "Dark mode colors fail contrast requirements" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add @media (prefers-color-scheme: dark) with accessible color contrast"
+      }
+    },
+    {
+      "id": "policy.theme_factory.font_size",
+      "tier": "T3",
+      "description": "Base font size should meet readability minimum",
+      "assert": [
+        { "expr": "base_font_size_px(output) >= config.min_base_font_size", "msg": "Base font too small ({base_font_size_px}px < {config.min_base_font_size}px)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Increase base font size to at least 14px for readability"
+      }
+    },
+    {
+      "id": "policy.theme_factory.line_height",
+      "tier": "T3",
+      "description": "Line height should meet readability minimum",
+      "assert": [
+        { "expr": "base_line_height(output) >= config.min_line_height", "msg": "Line height too tight ({base_line_height} < {config.min_line_height})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Increase line height to at least 1.4 for readability"
+      }
+    },
+    {
+      "id": "policy.theme_factory.font_restraint",
+      "tier": "T3",
+      "description": "Theme should use limited font families",
+      "assert": [
+        { "expr": "font_family_count(output) <= config.max_font_families", "msg": "Too many font families ({font_family_count} > {config.max_font_families})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Limit to 2-3 font families (heading, body, mono)"
+      }
+    },
+    {
+      "id": "policy.theme_factory.type_scale",
+      "tier": "T3",
+      "description": "Typography should follow a consistent scale",
+      "assert": [
+        { "expr": "has_type_scale(output) == true", "msg": "No type scale detected" },
+        { "expr": "type_scale_ratio_consistent(output) == true", "msg": "Inconsistent type scale ratios" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use consistent type scale ratio (e.g., 1.25 major third, 1.333 perfect fourth)"
+      }
+    },
+    {
+      "id": "policy.theme_factory.spacing_scale",
+      "tier": "T3",
+      "description": "Spacing should follow a consistent scale",
+      "assert": [
+        { "expr": "has_spacing_scale(output) == true", "msg": "No spacing scale detected" },
+        { "expr": "spacing_scale_adherence(output) >= config.min_spacing_adherence", "msg": "Spacing inconsistent ({spacing_scale_adherence}% on scale < {config.min_spacing_adherence}%)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use consistent spacing scale (e.g., 4px base: 4, 8, 12, 16, 24, 32...)"
+      }
+    },
+    {
+      "id": "policy.theme_factory.palette_coherence",
+      "tier": "T3",
+      "description": "Color palette should be coherent",
+      "assert": [
+        { "expr": "primary_color_count(output) <= config.max_primary_colors", "msg": "Too many primary colors ({primary_color_count} > {config.max_primary_colors})" },
+        { "expr": "has_color_relationships(output) == true", "msg": "Colors lack harmonic relationships" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Limit primary colors and establish color relationships (complementary, analogous, etc.)"
+      }
+    },
+    {
+      "id": "policy.theme_factory.css_variables",
+      "tier": "T3",
+      "description": "Theme should use CSS variables for maintainability",
+      "assert": [
+        { "expr": "css_variable_count(output) >= config.min_css_variables", "msg": "Insufficient CSS variables ({css_variable_count} < {config.min_css_variables})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Define theme values as CSS custom properties (--color-primary, --spacing-unit, etc.)"
+      }
+    }
+  ]
+}

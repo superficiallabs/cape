@@ -1,0 +1,116 @@
+{
+  "id": "capability.slack_gif_creator",
+  "version": "1.0.0",
+  "description": "Create animated GIFs optimized for Slack's emoji size constraints",
+  "source": "anthropics/skills/slack-gif-creator",
+  
+  "configuration": {
+    "emoji_max_size_bytes": 65536,
+    "emoji_width": 128,
+    "emoji_height": 128,
+    "min_frame_delay_ms": 20,
+    "max_frame_delay_ms": 100,
+    "max_color_table_size": 256
+  },
+  
+  "scope": {
+    "kind": "output_file",
+    "filter": { "extension": "gif" }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.slack_gif.valid_format",
+      "tier": "T1",
+      "description": "File must be valid GIF89a format",
+      "assert": [
+        { "expr": "gif_format(file) == 'GIF89a'", "msg": "Invalid GIF format (must be GIF89a for animation)" },
+        { "expr": "gif_header_valid(file) == true", "msg": "Invalid or corrupt GIF header" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Regenerate as valid GIF89a format"
+      }
+    },
+    {
+      "id": "policy.slack_gif.is_animated",
+      "tier": "T1",
+      "description": "GIF must be animated (multiple frames)",
+      "assert": [
+        { "expr": "frame_count(file) > 1", "msg": "Static image (only 1 frame). Must be animated GIF." }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add animation frames; single-frame GIF is not animated"
+      }
+    },
+    {
+      "id": "policy.slack_gif.emoji_size",
+      "tier": "T1",
+      "description": "Emoji GIF must be under 64KB",
+      "where": [
+        { "expr": "is_emoji_workflow(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "file_size_bytes(file) <= config.emoji_max_size_bytes", "msg": "File too large: {file_size_bytes} bytes > 65536 bytes (64KB limit)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Reduce file size: fewer frames, smaller color palette, or lossy compression"
+      }
+    },
+    {
+      "id": "policy.slack_gif.emoji_dimensions",
+      "tier": "T1",
+      "description": "Emoji GIF must be exactly 128x128 pixels",
+      "where": [
+        { "expr": "is_emoji_workflow(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "width(file) == config.emoji_width", "msg": "Wrong width: {width}px (must be 128px)" },
+        { "expr": "height(file) == config.emoji_height", "msg": "Wrong height: {height}px (must be 128px)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Resize to exactly 128x128 pixels"
+      }
+    },
+    {
+      "id": "policy.slack_gif.frame_timing",
+      "tier": "T1",
+      "description": "Frame timing must be within playable range",
+      "assert": [
+        { "expr": "min_frame_delay_ms(file) >= config.min_frame_delay_ms", "msg": "Frame delay too short: {min_frame_delay_ms}ms (minimum 20ms)" },
+        { "expr": "max_frame_delay_ms(file) <= config.max_frame_delay_ms", "msg": "Frame delay too long: {max_frame_delay_ms}ms (maximum 100ms)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Adjust frame delays to 20-100ms range (10-50 FPS)"
+      }
+    },
+    {
+      "id": "policy.slack_gif.color_table",
+      "tier": "T1",
+      "description": "Color table must be within GIF specification limits",
+      "assert": [
+        { "expr": "color_table_size(file) <= config.max_color_table_size", "msg": "Color table too large: {color_table_size} colors (max 256)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Reduce color palette to 256 colors or fewer"
+      }
+    },
+    {
+      "id": "policy.slack_gif.no_duplicate_frames",
+      "tier": "T3",
+      "description": "Animation should not have duplicate frames (optimization)",
+      "assert": [
+        { "expr": "duplicate_frame_count(file) == 0", "msg": "Contains {duplicate_frame_count} duplicate frames" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Remove duplicate frames or use frame disposal to extend duration"
+      }
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "id": "capability.xlsx",
+  "version": "1.0.0",
+  "description": "Create, edit, and analyze Excel spreadsheets with verifiable OOXML structure",
+  "source": "anthropics/skills/document-skills/xlsx",
+  
+  "configuration": {
+    "max_file_size_mb": 50,
+    "require_calc_chain": true
+  },
+  
+  "scope": {
+    "kind": "output_file",
+    "filter": { "extension": "xlsx" }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.xlsx.valid_structure",
+      "tier": "T1",
+      "description": "File must be valid OOXML structure",
+      "assert": [
+        { "expr": "is_zip_archive(file) == true", "msg": "File is not a valid ZIP archive" },
+        { "expr": "contains_file(file, 'xl/workbook.xml') == true", "msg": "Missing xl/workbook.xml" },
+        { "expr": "contains_file(file, '[Content_Types].xml') == true", "msg": "Missing [Content_Types].xml" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Regenerate file with proper OOXML structure"
+      }
+    },
+    {
+      "id": "policy.xlsx.xml_wellformed",
+      "tier": "T1",
+      "description": "XML content must be well-formed",
+      "assert": [
+        { "expr": "xml_wellformed(file, 'xl/workbook.xml') == true", "msg": "XML syntax error in workbook.xml" },
+        { "expr": "xml_parse_error_count(file) == 0", "msg": "XML parse errors: {xml_errors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix XML syntax errors in workbook content"
+      }
+    },
+    {
+      "id": "policy.xlsx.schema_valid",
+      "tier": "T1",
+      "description": "XML must conform to SpreadsheetML schema",
+      "assert": [
+        { "expr": "xml_schema_valid(file, 'sml.xsd') == true", "msg": "Workbook does not conform to OOXML schema" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Ensure XML conforms to SpreadsheetML schema (ECMA-376)"
+      }
+    },
+    {
+      "id": "policy.xlsx.sheets_exist",
+      "tier": "T1",
+      "description": "Workbook must contain at least one sheet",
+      "assert": [
+        { "expr": "sheet_count(file) > 0", "msg": "Workbook has no sheets" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add at least one worksheet to the workbook"
+      }
+    },
+    {
+      "id": "policy.xlsx.formulas_valid",
+      "tier": "T2",
+      "description": "All formulas must have valid syntax",
+      "where": [
+        { "expr": "has_formulas(file) == true" }
+      ],
+      "assert": [
+        { "expr": "formula_syntax_error_count(file) == 0", "msg": "Formula syntax errors: {formula_errors}" },
+        { "expr": "formula_reference_error_count(file) == 0", "msg": "Formula reference errors: {reference_errors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix formula syntax (check parentheses, commas, cell references)"
+      }
+    },
+    {
+      "id": "policy.xlsx.data_types_correct",
+      "tier": "T2",
+      "description": "Cell values must match declared types",
+      "assert": [
+        { "expr": "type_mismatch_count(file) == 0", "msg": "Type mismatches: {type_mismatch_cells}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Ensure cell values match their declared types"
+      }
+    },
+    {
+      "id": "policy.xlsx.data_preserved",
+      "tier": "T2",
+      "description": "Original data must be preserved during edits",
+      "where": [
+        { "expr": "is_edit_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "data_preserved(ctx.input, file) == true", "msg": "Data loss: original cell values missing" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Restore missing cell data or mark deletions explicitly"
+      }
+    },
+    {
+      "id": "policy.xlsx.charts_valid",
+      "tier": "T2",
+      "description": "All charts must have valid data ranges",
+      "where": [
+        { "expr": "has_charts(file) == true" }
+      ],
+      "assert": [
+        { "expr": "charts_with_invalid_range_count(file) == 0", "msg": "Charts with invalid data ranges: {invalid_charts}" },
+        { "expr": "charts_with_missing_data_count(file) == 0", "msg": "Charts with missing data: {empty_charts}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix chart data ranges to reference valid cells"
+      }
+    },
+    {
+      "id": "policy.xlsx.formatting_preserved",
+      "tier": "T2",
+      "description": "Formatting must be preserved during edits",
+      "where": [
+        { "expr": "is_edit_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "cell_styles_preserved(ctx.input, file) == true", "msg": "Cell styles modified unintentionally" },
+        { "expr": "conditional_formats_preserved(ctx.input, file) == true", "msg": "Conditional formatting lost" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Preserve original cell styles and conditional formatting"
+      }
+    },
+    {
+      "id": "policy.xlsx.named_ranges_valid",
+      "tier": "T2",
+      "description": "Named ranges must have valid references",
+      "where": [
+        { "expr": "has_named_ranges(file) == true" }
+      ],
+      "assert": [
+        { "expr": "invalid_named_range_count(file) == 0", "msg": "Invalid named ranges: {invalid_ranges}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix named range references or remove broken ranges"
+      }
+    },
+    {
+      "id": "policy.xlsx.calc_chain_valid",
+      "tier": "T2",
+      "description": "Calculation chain must be valid",
+      "where": [
+        { "expr": "config.require_calc_chain == true" },
+        { "expr": "has_formulas(file) == true" }
+      ],
+      "assert": [
+        { "expr": "calc_chain_valid(file) == true", "msg": "Calculation chain is invalid or missing" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Regenerate calculation chain (xl/calcChain.xml)"
+      }
+    }
+  ]
+}

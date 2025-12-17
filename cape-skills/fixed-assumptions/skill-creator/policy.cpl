@@ -1,0 +1,160 @@
+{
+  "id": "capability.skill_creator",
+  "version": "1.0.0",
+  "description": "Create effective skills that extend Claude's capabilities",
+  "source": "anthropics/skills/skill-creator",
+  
+  "configuration": {
+    "min_description_chars": 50,
+    "max_description_chars": 500,
+    "min_instruction_words": 100,
+    "min_examples": 2,
+    "min_guidelines": 1,
+    "required_frontmatter_fields": ["name", "description"],
+    "allowed_frontmatter_fields": ["name", "description"]
+  },
+  
+  "scope": {
+    "kind": "code_output",
+    "filter": { "type": "skill_definition" }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.skill_creator.skill_md_exists",
+      "tier": "T1",
+      "description": "Skill must have SKILL.md in root directory",
+      "assert": [
+        { "expr": "file_exists(skill, 'SKILL.md') == true", "msg": "Missing SKILL.md in root directory" },
+        { "expr": "skill_md_in_root(skill) == true", "msg": "SKILL.md must be in skill root directory" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Create SKILL.md file in the skill's root directory"
+      }
+    },
+    {
+      "id": "policy.skill_creator.valid_frontmatter",
+      "tier": "T1",
+      "description": "SKILL.md must have valid YAML frontmatter",
+      "assert": [
+        { "expr": "has_yaml_frontmatter(skill) == true", "msg": "Missing YAML frontmatter" },
+        { "expr": "yaml_parse_error_count(skill) == 0", "msg": "Invalid YAML syntax in frontmatter" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add valid YAML frontmatter between --- markers at start of SKILL.md"
+      }
+    },
+    {
+      "id": "policy.skill_creator.required_fields",
+      "tier": "T1",
+      "description": "Frontmatter must contain required fields",
+      "assert": [
+        { "expr": "has_frontmatter_field(skill, 'name') == true", "msg": "Missing required field: name" },
+        { "expr": "has_frontmatter_field(skill, 'description') == true", "msg": "Missing required field: description" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add 'name' and 'description' fields to frontmatter"
+      }
+    },
+    {
+      "id": "policy.skill_creator.no_extra_fields",
+      "tier": "T1",
+      "description": "Frontmatter must not contain unexpected fields",
+      "assert": [
+        { "expr": "extra_frontmatter_field_count(skill, config.allowed_frontmatter_fields) == 0", "msg": "Unexpected frontmatter fields: {extra_fields}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Remove extra fields from frontmatter; only 'name' and 'description' are allowed"
+      }
+    },
+    {
+      "id": "policy.skill_creator.name_matches_directory",
+      "tier": "T1",
+      "description": "Skill name must match directory name",
+      "assert": [
+        { "expr": "frontmatter_name(skill) == directory_name(skill)", "msg": "Name mismatch: frontmatter '{frontmatter_name}' != directory '{directory_name}'" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Update 'name' field to match the skill's directory name"
+      }
+    },
+    {
+      "id": "policy.skill_creator.no_broken_links",
+      "tier": "T1",
+      "description": "All internal links must resolve",
+      "assert": [
+        { "expr": "broken_link_count(skill) == 0", "msg": "Broken internal links: {broken_links}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix or remove broken links to internal files"
+      }
+    },
+    {
+      "id": "policy.skill_creator.scripts_valid",
+      "tier": "T1",
+      "description": "All included scripts must be properly formatted",
+      "assert": [
+        { "expr": "scripts_missing_shebang_count(skill) == 0", "msg": "Scripts missing shebang: {scripts_missing_shebang}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add shebang line (e.g., #!/bin/bash or #!/usr/bin/env python3) to scripts"
+      }
+    },
+    {
+      "id": "policy.skill_creator.description_length",
+      "tier": "T3",
+      "description": "Description should be appropriately sized",
+      "assert": [
+        { "expr": "description_length(skill) >= config.min_description_chars", "msg": "Description too short ({description_length} < {config.min_description_chars} chars)" },
+        { "expr": "description_length(skill) <= config.max_description_chars", "msg": "Description too long ({description_length} > {config.max_description_chars} chars)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Adjust description to 50-500 characters: concise but informative"
+      }
+    },
+    {
+      "id": "policy.skill_creator.has_instructions",
+      "tier": "T3",
+      "description": "Skill should have sufficient instructions",
+      "assert": [
+        { "expr": "instruction_word_count(skill) >= config.min_instruction_words", "msg": "Insufficient instructions ({instruction_word_count} < {config.min_instruction_words} words)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add more detailed instructions (minimum 100 words)"
+      }
+    },
+    {
+      "id": "policy.skill_creator.has_examples",
+      "tier": "T3",
+      "description": "Skill should include concrete examples",
+      "assert": [
+        { "expr": "example_count(skill) >= config.min_examples", "msg": "Insufficient examples ({example_count} < {config.min_examples})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add at least 2 concrete examples showing skill usage"
+      }
+    },
+    {
+      "id": "policy.skill_creator.has_guidelines",
+      "tier": "T3",
+      "description": "Skill should include usage guidelines",
+      "assert": [
+        { "expr": "guideline_count(skill) >= config.min_guidelines", "msg": "Missing usage guidelines" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add usage guidelines or warnings section"
+      }
+    }
+  ]
+}

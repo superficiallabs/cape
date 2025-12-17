@@ -1,0 +1,230 @@
+{
+  "id": "capability.frontend_design",
+  "version": "1.0.0",
+  "description": "Create distinctive, production-grade frontend interfaces that avoid generic AI aesthetics",
+  "source": "anthropics/skills/frontend-design",
+  
+  "configuration": {
+    "min_border_radius_variety": 3,
+    "min_color_count": 4,
+    "max_color_count": 12,
+    "max_font_families": 3,
+    "min_font_size_variety": 3,
+    "spacing_base": 4,
+    "min_typography_levels": 3,
+    "min_breakpoints": 2,
+    "min_contrast_ratio": 4.5
+  },
+  
+  "scope": {
+    "kind": "code_output",
+    "filter": { "type": ["html", "jsx", "css"] }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.frontend_design.valid_html",
+      "tier": "T1",
+      "description": "HTML must be valid and well-formed",
+      "where": [
+        { "expr": "has_html(output) == true" }
+      ],
+      "assert": [
+        { "expr": "html_syntax_valid(output) == true", "msg": "Invalid HTML syntax" },
+        { "expr": "unclosed_tag_count(output) == 0", "msg": "Unclosed HTML tags: {unclosed_tags}" },
+        { "expr": "deprecated_tag_count(output) == 0", "msg": "Deprecated HTML tags: {deprecated_tags}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix HTML syntax errors; close all tags; use modern semantic elements"
+      }
+    },
+    {
+      "id": "policy.frontend_design.valid_jsx",
+      "tier": "T1",
+      "description": "React/JSX must be valid syntax",
+      "where": [
+        { "expr": "has_jsx(output) == true" }
+      ],
+      "assert": [
+        { "expr": "jsx_syntax_valid(output) == true", "msg": "Invalid JSX syntax" },
+        { "expr": "has_default_export(output) == true", "msg": "Missing default export" },
+        { "expr": "hooks_rules_valid(output) == true", "msg": "React hooks rules violation (hooks called conditionally or in loops)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix JSX syntax; add default export; ensure hooks are called at top level"
+      }
+    },
+    {
+      "id": "policy.frontend_design.valid_css",
+      "tier": "T1",
+      "description": "CSS must be valid and parseable",
+      "assert": [
+        { "expr": "css_syntax_valid(output) == true", "msg": "Invalid CSS syntax" },
+        { "expr": "invalid_property_count(output) == 0", "msg": "Invalid CSS properties: {invalid_properties}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix CSS syntax errors (missing semicolons, invalid properties, malformed selectors)"
+      }
+    },
+    {
+      "id": "policy.frontend_design.images_have_alt",
+      "tier": "T2",
+      "description": "Images must have alt text for accessibility",
+      "assert": [
+        { "expr": "images_missing_alt_count(output) == 0", "msg": "Images missing alt text: {images_missing_alt}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add descriptive alt text to all <img> elements"
+      }
+    },
+    {
+      "id": "policy.frontend_design.buttons_have_text",
+      "tier": "T2",
+      "description": "Buttons must have accessible text",
+      "assert": [
+        { "expr": "buttons_missing_text_count(output) == 0", "msg": "Buttons missing accessible text: {buttons_missing_text}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add text content or aria-label to all buttons"
+      }
+    },
+    {
+      "id": "policy.frontend_design.form_labels",
+      "tier": "T2",
+      "description": "Form inputs must have associated labels",
+      "assert": [
+        { "expr": "inputs_missing_label_count(output) == 0", "msg": "Form inputs missing labels: {inputs_missing_label}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add <label> elements or aria-label to all form inputs"
+      }
+    },
+    {
+      "id": "policy.frontend_design.color_contrast",
+      "tier": "T2",
+      "description": "Text colors must have sufficient contrast against backgrounds",
+      "assert": [
+        { "expr": "min_color_contrast(output) >= config.min_contrast_ratio", "msg": "Insufficient color contrast ({min_color_contrast} < {config.min_contrast_ratio})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Increase contrast between text and background colors to meet WCAG AA (4.5:1)"
+      }
+    },
+    {
+      "id": "policy.frontend_design.border_radius_variety",
+      "tier": "T3",
+      "description": "Design should use varied border-radius values (anti-slop)",
+      "assert": [
+        { "expr": "unique_border_radius_count(output) >= config.min_border_radius_variety", "msg": "Uniform border-radius suggests generic output ({unique_border_radius_count} < {config.min_border_radius_variety})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Vary border-radius: use different values for buttons, cards, inputs, avatars"
+      }
+    },
+    {
+      "id": "policy.frontend_design.color_palette",
+      "tier": "T3",
+      "description": "Design should use an intentional color palette (anti-slop)",
+      "assert": [
+        { "expr": "unique_color_count(output) >= config.min_color_count", "msg": "Palette too restricted ({unique_color_count} < {config.min_color_count})" },
+        { "expr": "unique_color_count(output) <= config.max_color_count", "msg": "Palette too noisy ({unique_color_count} > {config.max_color_count})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use 4-12 intentional colors: primary, secondary, accent, neutrals, semantic"
+      }
+    },
+    {
+      "id": "policy.frontend_design.font_restraint",
+      "tier": "T3",
+      "description": "Design should show typographic restraint (anti-slop)",
+      "assert": [
+        { "expr": "font_family_count(output) <= config.max_font_families", "msg": "Too many font families ({font_family_count} > {config.max_font_families})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Limit to 2-3 font families: heading, body, mono (if needed)"
+      }
+    },
+    {
+      "id": "policy.frontend_design.font_size_variety",
+      "tier": "T3",
+      "description": "Design should use varied font sizes (anti-slop)",
+      "assert": [
+        { "expr": "unique_font_size_count(output) >= config.min_font_size_variety", "msg": "Flat typography ({unique_font_size_count} < {config.min_font_size_variety} sizes)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Establish type scale: distinct sizes for headings, body, captions, labels"
+      }
+    },
+    {
+      "id": "policy.frontend_design.spacing_system",
+      "tier": "T3",
+      "description": "Design should follow a consistent spacing scale",
+      "assert": [
+        { "expr": "spacing_on_scale(output, config.spacing_base) == true", "msg": "Spacing values not on {config.spacing_base}px grid" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use spacing multiples of {config.spacing_base}px"
+      }
+    },
+    {
+      "id": "policy.frontend_design.typography_hierarchy",
+      "tier": "T3",
+      "description": "Design should have clear typography hierarchy",
+      "assert": [
+        { "expr": "typography_level_count(output) >= config.min_typography_levels", "msg": "Flat hierarchy ({typography_level_count} < {config.min_typography_levels} levels)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Establish hierarchy with distinct heading, body, and caption styles"
+      }
+    },
+    {
+      "id": "policy.frontend_design.responsive",
+      "tier": "T3",
+      "description": "Design should include responsive breakpoints",
+      "assert": [
+        { "expr": "breakpoint_count(output) >= config.min_breakpoints", "msg": "Insufficient breakpoints ({breakpoint_count} < {config.min_breakpoints})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add @media queries for mobile and desktop breakpoints"
+      }
+    },
+    {
+      "id": "policy.frontend_design.no_hardcoded_colors",
+      "tier": "T3",
+      "description": "Colors should use CSS variables for maintainability",
+      "assert": [
+        { "expr": "hardcoded_color_count(output) == 0", "msg": "Hardcoded colors found: {hardcoded_colors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use CSS custom properties: var(--color-primary), var(--color-text), etc."
+      }
+    },
+    {
+      "id": "policy.frontend_design.no_inline_styles",
+      "tier": "T3",
+      "description": "Styles should not be inline",
+      "assert": [
+        { "expr": "inline_style_count(output) == 0", "msg": "Inline styles found ({inline_style_count} instances)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Move inline styles to CSS classes or Tailwind utilities"
+      }
+    }
+  ]
+}

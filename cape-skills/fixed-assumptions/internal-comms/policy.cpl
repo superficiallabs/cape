@@ -1,0 +1,171 @@
+{
+  "id": "capability.internal_comms",
+  "version": "1.0.0",
+  "description": "Write internal communications with verifiable structure and professional tone",
+  "source": "anthropics/skills/internal-comms",
+  
+  "configuration": {
+    "max_reading_grade": 10,
+    "max_sentence_length": 25,
+    "min_sentiment_score": 0.0,
+    "banned_terms": ["lol", "lmao", "rofl", "idk", "gonna", "wanna", "gotta", "kinda", "tbh", "ngl", "imo", "btw"],
+    "status_report_sections": ["Summary", "Metrics", "Blockers"],
+    "newsletter_sections": ["Headline", "Updates"],
+    "faq_sections": ["Question", "Answer"],
+    "announcement_sections": ["Subject", "Details", "Action Items"],
+    "word_limits": {
+      "status_report": { "min": 200, "max": 800 },
+      "newsletter": { "min": 500, "max": 2000 },
+      "faq_answer": { "min": 50, "max": 300 },
+      "announcement": { "min": 100, "max": 500 }
+    }
+  },
+  
+  "scope": {
+    "kind": "text_content"
+  },
+  
+  "policies": [
+    {
+      "id": "policy.internal_comms.required_sections",
+      "tier": "T1",
+      "description": "Document must have required sections for its type",
+      "assert": [
+        { "expr": "has_required_sections(doc, doc.type) == true", "msg": "Missing required sections for {doc.type}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add missing sections: status reports need Summary/Metrics/Blockers; newsletters need Headline/Updates"
+      }
+    },
+    {
+      "id": "policy.internal_comms.structure_valid",
+      "tier": "T1",
+      "description": "Document structure must be well-formed",
+      "assert": [
+        { "expr": "orphan_heading_count(doc) == 0", "msg": "Document has orphan headings (headings with no content)" },
+        { "expr": "heading_hierarchy_valid(doc) == true", "msg": "Heading hierarchy broken (e.g., h3 without h2)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix document structure: add content under headings, maintain proper heading hierarchy"
+      }
+    },
+    {
+      "id": "policy.internal_comms.metadata_present",
+      "tier": "T2",
+      "description": "Document must have compliance metadata",
+      "assert": [
+        { "expr": "has_date(doc) == true", "msg": "Missing date" },
+        { "expr": "has_author(doc) == true", "msg": "Missing author" },
+        { "expr": "has_subject(doc) == true", "msg": "Missing subject line" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add metadata: Date, Author, Subject at document start"
+      }
+    },
+    {
+      "id": "policy.internal_comms.has_greeting",
+      "tier": "T2",
+      "description": "Document should have appropriate greeting",
+      "where": [
+        { "expr": "doc.type in ['status_report', 'newsletter', 'announcement']" }
+      ],
+      "assert": [
+        { "expr": "has_greeting(doc) == true", "msg": "Missing greeting/salutation" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add appropriate greeting (e.g., 'Hi team,' or 'Dear colleagues,')"
+      }
+    },
+    {
+      "id": "policy.internal_comms.has_signoff",
+      "tier": "T2",
+      "description": "Document should have appropriate sign-off",
+      "where": [
+        { "expr": "doc.type in ['status_report', 'newsletter', 'announcement']" }
+      ],
+      "assert": [
+        { "expr": "has_signoff(doc) == true", "msg": "Missing sign-off/closing" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add appropriate sign-off (e.g., 'Best,' or 'Thanks,')"
+      }
+    },
+    {
+      "id": "policy.internal_comms.no_pii",
+      "tier": "T2",
+      "description": "Document must not contain PII",
+      "assert": [
+        { "expr": "pii_instance_count(doc) == 0", "msg": "Potential PII detected: {pii_types_found}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Remove or redact PII (names, emails, phone numbers, addresses)"
+      }
+    },
+    {
+      "id": "policy.internal_comms.no_slang",
+      "tier": "T3",
+      "description": "Document should not contain casual slang",
+      "assert": [
+        { "expr": "slang_match_count(doc, config.banned_terms) == 0", "msg": "Unprofessional slang detected: {matched_terms}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Replace slang with professional alternatives"
+      }
+    },
+    {
+      "id": "policy.internal_comms.sentiment_appropriate",
+      "tier": "T3",
+      "description": "Document tone should be neutral to positive",
+      "assert": [
+        { "expr": "sentiment_score(doc) >= config.min_sentiment_score", "msg": "Negative/hostile tone detected (sentiment {sentiment_score} < {config.min_sentiment_score})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Revise negative phrasing; focus on constructive language"
+      }
+    },
+    {
+      "id": "policy.internal_comms.reading_level",
+      "tier": "T3",
+      "description": "Document should be readable at target grade level",
+      "assert": [
+        { "expr": "flesch_kincaid_grade(doc) <= config.max_reading_grade", "msg": "Reading level too high (grade {flesch_kincaid_grade} > {config.max_reading_grade})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Simplify language: use shorter sentences, simpler words"
+      }
+    },
+    {
+      "id": "policy.internal_comms.sentence_length",
+      "tier": "T3",
+      "description": "Sentences should not be too long",
+      "assert": [
+        { "expr": "avg_sentence_length(doc) <= config.max_sentence_length", "msg": "Average sentence too long ({avg_sentence_length} words > {config.max_sentence_length})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Break long sentences into shorter ones"
+      }
+    },
+    {
+      "id": "policy.internal_comms.word_count",
+      "tier": "T3",
+      "description": "Document length should be appropriate for type",
+      "assert": [
+        { "expr": "word_count_in_range(doc, config.word_limits[doc.type]) == true", "msg": "Document length outside bounds for {doc.type}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Adjust length: status reports 200-800 words, newsletters 500-2000 words"
+      }
+    }
+  ]
+}

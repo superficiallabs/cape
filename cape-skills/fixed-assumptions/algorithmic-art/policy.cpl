@@ -1,0 +1,140 @@
+{
+  "id": "capability.algorithmic_art",
+  "version": "1.0.0",
+  "description": "Create generative art using p5.js with verifiable structure and complexity",
+  "source": "anthropics/skills/algorithmic-art",
+  
+  "configuration": {
+    "min_color_calls": 3,
+    "min_shape_variety": 2,
+    "min_transform_calls": 1
+  },
+  
+  "scope": {
+    "kind": "code_output",
+    "filter": { "language": "javascript", "framework": "p5js" }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.algorithmic_art.valid_syntax",
+      "tier": "T1",
+      "description": "Code must be valid p5.js/JavaScript syntax",
+      "assert": [
+        { "expr": "valid_p5_syntax(code) == true", "msg": "Invalid p5.js syntax" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix syntax errors in p5.js code"
+      }
+    },
+    {
+      "id": "policy.algorithmic_art.has_setup",
+      "tier": "T1",
+      "description": "Sketch must have setup() function",
+      "assert": [
+        { "expr": "has_setup_function(code) == true", "msg": "Missing required setup() function" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add setup() function to initialize canvas and state"
+      }
+    },
+    {
+      "id": "policy.algorithmic_art.has_draw",
+      "tier": "T1",
+      "description": "Sketch must have draw() function",
+      "assert": [
+        { "expr": "has_draw_function(code) == true", "msg": "Missing required draw() function" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add draw() function for render loop"
+      }
+    },
+    {
+      "id": "policy.algorithmic_art.seeded_randomness",
+      "tier": "T1",
+      "description": "Sketch must use seeded randomness for reproducibility",
+      "assert": [
+        { "expr": "calls_random_seed(code) == true", "msg": "Missing randomSeed() call for reproducibility" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add randomSeed(seed) call in setup() before any random operations"
+      }
+    },
+    {
+      "id": "policy.algorithmic_art.no_fetch",
+      "tier": "T1",
+      "description": "Sketch must not depend on external data",
+      "assert": [
+        { "expr": "no_fetch_calls(code) == true", "msg": "Sketch contains fetch() calls which break reproducibility" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Remove external data dependencies; use procedural generation instead"
+      }
+    },
+    {
+      "id": "policy.algorithmic_art.no_eval",
+      "tier": "T1",
+      "description": "Sketch must not use dynamic code execution",
+      "assert": [
+        { "expr": "no_eval_calls(code) == true", "msg": "Sketch contains eval() which is a security risk" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Remove eval() calls; use explicit code instead"
+      }
+    },
+    {
+      "id": "policy.algorithmic_art.color_intentionality",
+      "tier": "T3",
+      "description": "Sketch should demonstrate intentional color work",
+      "assert": [
+        { "expr": "color_function_count(code) >= config.min_color_calls", "msg": "Limited color work suggests trivial output" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add deliberate color choices: use fill(), stroke(), background() with varied values"
+      }
+    },
+    {
+      "id": "policy.algorithmic_art.shape_variety",
+      "tier": "T3",
+      "description": "Sketch should use multiple shape types",
+      "assert": [
+        { "expr": "unique_shape_functions(code) >= config.min_shape_variety", "msg": "Single shape type suggests trivial output" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add variety: combine ellipse(), rect(), line(), arc(), bezier(), etc."
+      }
+    },
+    {
+      "id": "policy.algorithmic_art.algorithmic_complexity",
+      "tier": "T3",
+      "description": "Sketch should exhibit algorithmic complexity",
+      "assert": [
+        { "expr": "uses_noise_or_nested_loops(code) == true", "msg": "No noise functions or nested iteration suggests trivial algorithm" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add complexity: use noise(), nested for loops, or recursive patterns"
+      }
+    },
+    {
+      "id": "policy.algorithmic_art.transformations",
+      "tier": "T3",
+      "description": "Sketch should use compositional transformations",
+      "assert": [
+        { "expr": "transform_function_count(code) >= config.min_transform_calls", "msg": "No transformations suggests flat composition" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add compositional depth: use translate(), rotate(), scale(), push(), pop()"
+      }
+    }
+  ]
+}

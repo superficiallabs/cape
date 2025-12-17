@@ -1,0 +1,139 @@
+{
+  "id": "capability.docx",
+  "version": "1.0.0",
+  "description": "Create, edit, and analyze Word documents with verifiable OOXML structure",
+  "source": "anthropics/skills/document-skills/docx",
+  
+  "configuration": {
+    "max_file_size_mb": 50,
+    "require_tracked_changes": false
+  },
+  
+  "scope": {
+    "kind": "output_file",
+    "filter": { "extension": "docx" }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.docx.valid_structure",
+      "tier": "T1",
+      "description": "File must be valid OOXML structure",
+      "assert": [
+        { "expr": "is_zip_archive(file) == true", "msg": "File is not a valid ZIP archive" },
+        { "expr": "contains_file(file, 'word/document.xml') == true", "msg": "Missing word/document.xml" },
+        { "expr": "contains_file(file, '[Content_Types].xml') == true", "msg": "Missing [Content_Types].xml" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Regenerate file with proper OOXML structure"
+      }
+    },
+    {
+      "id": "policy.docx.xml_wellformed",
+      "tier": "T1",
+      "description": "XML content must be well-formed",
+      "assert": [
+        { "expr": "xml_wellformed(file, 'word/document.xml') == true", "msg": "XML syntax error in document.xml" },
+        { "expr": "xml_parse_error_count(file) == 0", "msg": "XML parse errors: {xml_errors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix XML syntax errors in document content"
+      }
+    },
+    {
+      "id": "policy.docx.schema_valid",
+      "tier": "T1",
+      "description": "XML must conform to OOXML schema",
+      "assert": [
+        { "expr": "xml_schema_valid(file, 'wml.xsd') == true", "msg": "Document does not conform to OOXML schema" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Ensure document XML conforms to WordprocessingML schema (ECMA-376)"
+      }
+    },
+    {
+      "id": "policy.docx.content_preserved",
+      "tier": "T2",
+      "description": "Original content must be preserved during edits",
+      "where": [
+        { "expr": "is_edit_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "text_content_preserved(ctx.input, file) == true", "msg": "Data loss: text from original missing in output" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Restore missing content or mark deletions with tracked changes"
+      }
+    },
+    {
+      "id": "policy.docx.tracked_changes_valid",
+      "tier": "T2",
+      "description": "Tracked changes must have valid metadata",
+      "where": [
+        { "expr": "has_tracked_changes(file) == true" }
+      ],
+      "assert": [
+        { "expr": "insertions_have_rsid(file) == true", "msg": "Insertions missing RSID" },
+        { "expr": "insertions_have_author(file) == true", "msg": "Insertions missing author" },
+        { "expr": "deletions_have_rsid(file) == true", "msg": "Deletions missing RSID" },
+        { "expr": "deletions_have_author(file) == true", "msg": "Deletions missing author" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add RSID and author metadata to all tracked changes"
+      }
+    },
+    {
+      "id": "policy.docx.comments_intact",
+      "tier": "T2",
+      "description": "Comments must be properly anchored",
+      "where": [
+        { "expr": "has_comments(file) == true" }
+      ],
+      "assert": [
+        { "expr": "orphaned_comment_count(file) == 0", "msg": "Orphaned comments: {orphaned_comments}" },
+        { "expr": "comments_have_author(file) == true", "msg": "Comments missing author metadata" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix comment anchors in document.xml"
+      }
+    },
+    {
+      "id": "policy.docx.formatting_preserved",
+      "tier": "T2",
+      "description": "Formatting must be preserved during edits",
+      "where": [
+        { "expr": "is_edit_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "styles_preserved(ctx.input, file) == true", "msg": "Styles modified unintentionally" },
+        { "expr": "fonts_preserved(ctx.input, file) == true", "msg": "Fonts modified unintentionally" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Preserve original styles and fonts; only modify as explicitly requested"
+      }
+    },
+    {
+      "id": "policy.docx.redlining_required",
+      "tier": "T2",
+      "description": "Tracked changes required when configured",
+      "where": [
+        { "expr": "config.require_tracked_changes == true" },
+        { "expr": "is_edit_operation(ctx) == true" }
+      ],
+      "assert": [
+        { "expr": "has_tracked_changes(file) == true", "msg": "Redlining required but no tracked changes found" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Enable tracked changes for all modifications"
+      }
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "id": "capability.artifacts_builder",
+  "version": "1.0.0",
+  "description": "Build React artifacts that render correctly in Claude's artifact environment",
+  "source": "anthropics/skills/artifacts-builder",
+  
+  "configuration": {
+    "max_source_size_bytes": 50000,
+    "allowed_import_sources": ["react", "lucide-react", "recharts", "lodash", "d3", "@/components/ui/*"]
+  },
+  
+  "scope": {
+    "kind": "code_output",
+    "filter": { "type": ["jsx", "tsx"] }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.artifacts_builder.valid_syntax",
+      "tier": "T1",
+      "description": "Code must be valid JSX/React syntax",
+      "assert": [
+        { "expr": "valid_jsx_syntax(code) == true", "msg": "Invalid JSX syntax" },
+        { "expr": "jsx_parse_error_count(code) == 0", "msg": "JSX parse errors: {jsx_errors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix JSX syntax errors (unclosed tags, invalid expressions, etc.)"
+      }
+    },
+    {
+      "id": "policy.artifacts_builder.imports_resolve",
+      "tier": "T1",
+      "description": "All imports must resolve to available dependencies",
+      "assert": [
+        { "expr": "unresolved_import_count(code, config.allowed_import_sources) == 0", "msg": "Unresolved imports: {unresolved_imports}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use only available libraries: react, lucide-react, recharts, lodash, d3, shadcn/ui"
+      }
+    },
+    {
+      "id": "policy.artifacts_builder.valid_tailwind",
+      "tier": "T1",
+      "description": "All Tailwind classes must be valid utility classes",
+      "assert": [
+        { "expr": "invalid_tailwind_class_count(code) == 0", "msg": "Invalid Tailwind classes: {invalid_tailwind_classes}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Use only valid Tailwind utility classes"
+      }
+    },
+    {
+      "id": "policy.artifacts_builder.hooks_valid",
+      "tier": "T1",
+      "description": "React hooks must follow rules of hooks",
+      "assert": [
+        { "expr": "hooks_rules_violations(code) == 0", "msg": "Hooks rules violation: {hooks_violations}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Hooks must be called at top level, not inside conditions/loops/nested functions"
+      }
+    },
+    {
+      "id": "policy.artifacts_builder.has_default_export",
+      "tier": "T1",
+      "description": "Artifact must have a default export for rendering",
+      "assert": [
+        { "expr": "has_default_export(code) == true", "msg": "Missing default export" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add 'export default ComponentName' or 'export default function Component()'"
+      }
+    },
+    {
+      "id": "policy.artifacts_builder.source_size",
+      "tier": "T1",
+      "description": "Source code must not exceed size limit",
+      "assert": [
+        { "expr": "source_size_bytes(code) <= config.max_source_size_bytes", "msg": "Source too large ({source_size_bytes} > {config.max_source_size_bytes} bytes)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Reduce code size: remove unused code, simplify components"
+      }
+    }
+  ]
+}

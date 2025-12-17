@@ -1,0 +1,100 @@
+{
+  "id": "capability.brand_guidelines",
+  "version": "1.0.0",
+  "description": "Enforce brand consistency via color, typography, and spacing constraints",
+  "source": "anthropics/skills/brand-guidelines",
+  
+  "configuration": {
+    "brand_colors": {
+      "primary": "#D97757",
+      "secondary": "#1A1A1A",
+      "background": "#FFFFFF",
+      "text": "#1A1A1A"
+    },
+    "color_shade_tolerance": 0.15,
+    "brand_fonts": ["Styrene A", "Styrene B", "system-ui", "sans-serif"],
+    "spacing_base": 8,
+    "spacing_exceptions": [1, 2, 4],
+    "contrast_threshold": 4.5,
+    "heading_scale_ratio": 1.25
+  },
+  
+  "scope": {
+    "kind": "css_output"
+  },
+  
+  "policies": [
+    {
+      "id": "policy.brand_guidelines.valid_css",
+      "tier": "T1",
+      "description": "Output must be valid CSS syntax",
+      "assert": [
+        { "expr": "valid_css(output) == true", "msg": "Invalid CSS syntax" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Fix CSS syntax errors (missing semicolons, invalid properties, etc.)"
+      }
+    },
+    {
+      "id": "policy.brand_guidelines.colors_match",
+      "tier": "T2",
+      "description": "All colors must be from brand palette (or valid shades/tints)",
+      "assert": [
+        { "expr": "unauthorized_color_count(output, config.brand_colors, config.color_shade_tolerance) == 0", "msg": "Unauthorized colors used: {unauthorized_colors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Replace non-brand colors with approved palette values"
+      }
+    },
+    {
+      "id": "policy.brand_guidelines.fonts_match",
+      "tier": "T2",
+      "description": "All fonts must be from brand typography",
+      "assert": [
+        { "expr": "unauthorized_font_count(output, config.brand_fonts) == 0", "msg": "Unauthorized fonts used: {unauthorized_fonts}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Replace non-brand fonts with approved typefaces"
+      }
+    },
+    {
+      "id": "policy.brand_guidelines.contrast_valid",
+      "tier": "T2",
+      "description": "All color pairs must meet WCAG contrast requirements",
+      "assert": [
+        { "expr": "min_contrast_ratio(output) >= config.contrast_threshold", "msg": "Contrast ratio {min_contrast_ratio} below threshold {config.contrast_threshold}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Increase contrast between foreground and background colors"
+      }
+    },
+    {
+      "id": "policy.brand_guidelines.spacing_on_scale",
+      "tier": "T3",
+      "description": "Spacing values should follow brand grid",
+      "assert": [
+        { "expr": "off_grid_spacing_count(output, config.spacing_base, config.spacing_exceptions) == 0", "msg": "Spacing values not on {config.spacing_base}px grid: {off_grid_values}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Adjust spacing to multiples of base unit (exceptions: 1px, 2px, 4px for fine adjustments)"
+      }
+    },
+    {
+      "id": "policy.brand_guidelines.typography_hierarchy",
+      "tier": "T3",
+      "description": "Heading sizes should follow descending scale",
+      "assert": [
+        { "expr": "heading_sizes_descending(output) == true", "msg": "Heading hierarchy broken: h{n} is not larger than h{n+1}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Ensure h1 > h2 > h3 > h4 > h5 > h6 in font size"
+      }
+    }
+  ]
+}

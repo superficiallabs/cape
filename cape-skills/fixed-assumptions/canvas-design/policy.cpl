@@ -1,0 +1,151 @@
+{
+  "id": "capability.canvas_design",
+  "version": "1.0.0",
+  "description": "Create visual designs in PNG/PDF with composition quality verification",
+  "source": "anthropics/skills/canvas-design",
+  
+  "configuration": {
+    "allowed_formats": ["png", "pdf", "svg"],
+    "min_content_coverage": 0.05,
+    "min_dpi": 72,
+    "min_unique_colors": 2,
+    "max_unique_colors": 20,
+    "min_visual_balance": 0.3,
+    "max_visual_balance": 0.7,
+    "min_dominant_color_ratio": 0.1
+  },
+  
+  "scope": {
+    "kind": "output_file",
+    "filter": { "type": ["png", "pdf", "svg"] }
+  },
+  
+  "policies": [
+    {
+      "id": "policy.canvas_design.valid_format",
+      "tier": "T1",
+      "description": "Output must be a supported image format",
+      "assert": [
+        { "expr": "format(output) in config.allowed_formats", "msg": "Invalid format '{format}'. Must be one of: {config.allowed_formats}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Export as PNG, PDF, or SVG"
+      }
+    },
+    {
+      "id": "policy.canvas_design.file_valid",
+      "tier": "T1",
+      "description": "File must not be corrupted",
+      "assert": [
+        { "expr": "file_header_valid(output) == true", "msg": "File header invalid or corrupted" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Re-export file; check for encoding errors"
+      }
+    },
+    {
+      "id": "policy.canvas_design.dimensions_match",
+      "tier": "T1",
+      "description": "Dimensions must match specification",
+      "assert": [
+        { "expr": "width(output) == spec.width", "msg": "Width mismatch: {width} != {spec.width}" },
+        { "expr": "height(output) == spec.height", "msg": "Height mismatch: {height} != {spec.height}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Resize canvas to specified dimensions"
+      }
+    },
+    {
+      "id": "policy.canvas_design.not_empty",
+      "tier": "T1",
+      "description": "Canvas must contain visible content",
+      "assert": [
+        { "expr": "content_coverage(output) >= config.min_content_coverage", "msg": "Canvas is empty ({content_coverage}% < {config.min_content_coverage}% minimum)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add visual content; canvas appears blank or near-blank"
+      }
+    },
+    {
+      "id": "policy.canvas_design.sufficient_resolution",
+      "tier": "T1",
+      "description": "Resolution must meet minimum DPI",
+      "assert": [
+        { "expr": "dpi(output) >= config.min_dpi", "msg": "Resolution too low ({dpi} DPI < {config.min_dpi} minimum)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Increase resolution or export at higher DPI"
+      }
+    },
+    {
+      "id": "policy.canvas_design.palette_compliance",
+      "tier": "T2",
+      "description": "Colors must be within declared palette (if specified)",
+      "where": [
+        { "expr": "spec.palette != null" }
+      ],
+      "assert": [
+        { "expr": "colors_subset_of(output, spec.palette) == true", "msg": "Colors used outside declared palette: {unauthorized_colors}" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Replace off-palette colors with approved palette values"
+      }
+    },
+    {
+      "id": "policy.canvas_design.color_variety",
+      "tier": "T3",
+      "description": "Palette should have intentional variety (not too few, not too many)",
+      "assert": [
+        { "expr": "unique_color_count(output) >= config.min_unique_colors", "msg": "Palette too restricted ({unique_color_count} < {config.min_unique_colors})" },
+        { "expr": "unique_color_count(output) <= config.max_unique_colors", "msg": "Palette too noisy ({unique_color_count} > {config.max_unique_colors})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Adjust color variety: add intentional colors or reduce noise"
+      }
+    },
+    {
+      "id": "policy.canvas_design.color_hierarchy",
+      "tier": "T3",
+      "description": "Design should have clear dominant colors",
+      "assert": [
+        { "expr": "dominant_color_ratio(output) >= config.min_dominant_color_ratio", "msg": "No clear color hierarchy (no color exceeds {config.min_dominant_color_ratio}% coverage)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Establish color hierarchy: use fewer colors with clearer dominance"
+      }
+    },
+    {
+      "id": "policy.canvas_design.visual_balance",
+      "tier": "T3",
+      "description": "Content should be visually balanced across canvas",
+      "assert": [
+        { "expr": "visual_weight_distribution(output) >= config.min_visual_balance", "msg": "Content skewed too far from center (balance {visual_weight_distribution} < {config.min_visual_balance})" },
+        { "expr": "visual_weight_distribution(output) <= config.max_visual_balance", "msg": "Content too centered (balance {visual_weight_distribution} > {config.max_visual_balance})" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Redistribute visual elements for better balance"
+      }
+    },
+    {
+      "id": "policy.canvas_design.focal_point",
+      "tier": "T3",
+      "description": "Design should have at least one focal point",
+      "assert": [
+        { "expr": "contrast_region_count(output) >= 1", "msg": "No clear focal point detected (no high-contrast regions)" }
+      ],
+      "on_violation": {
+        "action": "CORRECT",
+        "correction_hint": "Add a focal point: area of high contrast or visual interest"
+      }
+    }
+  ]
+}
